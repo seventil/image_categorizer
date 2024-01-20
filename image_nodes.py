@@ -1,6 +1,6 @@
 import json
 import os
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 DEFAULT_PATH = "databank"
 DEFAULT_ENCODING = "utf-8"
@@ -81,26 +81,37 @@ class ImageStorageNode:
     """A node to store evaluated image objects differentiated by categories.
 
     Attributes:
-        rank (int | None): category mark of the images contained in the node.
+        ranks (Tuple[int] | None): category mark of the images contained in the node.
         bucket (str | None): bucket that splits the images by MAX_ITEMS_PER_NODE.
+        name (str | None): name of the node, containing info on it's ranks for
+            categories and subcategories and its bucket.
         images (List[EvaluatedPic]): evaluated images.
     """
 
     def __init__(
         self,
-        rank: int | None,
-        bucket: str | None,
+        name: str | None = None,
+        ranks: Tuple[int] | None = None,
+        bucket: str | None = None,
         evaluated_pics: List[dict] | None = None,
     ) -> None:
         """Instantiate the node with possible rank and json data for pics.
 
         Args:
-            rank (int | None): mark for the images in the node for respective category.
+            name (str | None): name of the node.
+            ranks (Tuple[int] | None): category mark of the images contained in the node.
             bucket (str | None): bucket that splits the images by MAX_ITEMS_PER_NODE.
             evaluated_pics (List[dict] | None): json data for pics. Defaults to None.
         """
-        self.rank = rank
-        self.bucket = bucket
+        if name is not None:
+            self.__name: str = name
+            name = name.split("_")
+            self.bucket: str = name.pop(-1)
+            self.ranks: Tuple[int] = tuple(map(int, name))
+        if ranks is not None:
+            self.ranks = ranks
+        if bucket is not None:
+            self.bucket = bucket
 
         if evaluated_pics is None:
             self.images: List[EvaluatedPic] = []
@@ -113,6 +124,18 @@ class ImageStorageNode:
                 )
                 for pic in evaluated_pics
             ]
+
+    @property
+    def name(self) -> str:
+        """The node name property.
+
+        Contains info on it's ranks for categories and subcategories and its bucket.
+        """
+        if not self.__name:
+            name = [rank for rank in self.ranks]
+            name.append(self.bucket)
+            self.__name = "_".join(name)
+        return self.__name
 
     def add_image(self, image: EvaluatedPic) -> bool:
         """Add image object to the node.
@@ -174,7 +197,8 @@ class ImageNodesHolder:
 
 
 class DataBank:
-    """ Responsible for saving evaluated image info to a physical storage in JSON."""
+    """Responsible for saving evaluated image info to a physical storage in JSON."""
+
     @staticmethod
     def filter_files(files: List[str], filters: str | List[str]) -> List[str]:
         """Filters files with wanted formats from the list of files.
@@ -217,11 +241,10 @@ class DataBank:
                 with open(full_path, "r", encoding=DEFAULT_ENCODING) as fstream:
                     eval_pics_json_data = json.load(fstream)
                 node_name = os.path.basename(full_path).split(".")[0]
-                node_rank, node_bucket = node_name.split("_")
+
                 nodes.append(
                     ImageStorageNode(
-                        rank=int(node_rank),
-                        bucket=node_bucket,
+                        name=node_name,
                         evaluated_pics=eval_pics_json_data,
                     )
                 )
@@ -252,7 +275,7 @@ class DataBank:
                         DataBankSchema.evals: img.evals,
                     }
                     evaluated_images.append(evaluated_img_json)
-                output_name = f"{node.rank}_{node.bucket}.{STORAGE_FORMAT}"
+                output_name = f"{node.name}.{STORAGE_FORMAT}"
                 output_path = os.path.join(root_path, path)
                 os.makedirs(output_path, exist_ok=True)
                 with open(
