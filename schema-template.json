@@ -1,0 +1,14 @@
+{
+    "Categories": [
+        "cat1",
+        "cat2",
+        "cat3",
+        "cat4"
+    ],
+    "Evals": [
+        "eval1",
+        "eval2",
+        "eval3",
+        "eval4"
+    ]
+}
