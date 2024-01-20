@@ -57,14 +57,34 @@ class EvaluatedPic:
             self.evals = evals
         self.resize = resize
 
-    def add_category(self, category: str) -> None:
+    def add_category(self, category: str, category_priority: Tuple[str]) -> None:
         """Add a category that the image fits into.
 
         Args:
             category (str): name of the category from the schema file.
+            category_priority (Tuple[str]): sorted categories from schema, where
+                lowest index indicates higher folder (closer to root) in the databank
+                structure.
         """
         if category not in self.categories:
             self.categories.append(category)
+            self.__sort_categories(category_priority)
+
+    def __sort_categories(self, category_priority: Tuple[str]) -> None:
+        """Sort categories according to schema priorities.
+
+        Args:
+            category_priority (Tuple[str]): sorted categories from schema, where
+                lowest index indicates higher folder (closer to root) in the databank
+                structure.
+        """
+        image_cat_idx = 0
+        for cat in category_priority:
+            if cat in self.categories:
+                cur_idx = self.categories.index(cat)
+                self.categories[cur_idx] = self.categories[image_cat_idx]
+                self.categories[image_cat_idx] = cat
+                image_cat_idx += 1
 
     def evaluate(self, category: str, mark: int) -> None:
         """Add or change an evaluation for the image.
@@ -181,12 +201,13 @@ class ImageNodesHolder:
         """
         return self.__image_nodes
 
-    def find_node(self, image: EvaluatedPic) -> ImageStorageNode:
-        """Returns node that fits the image object based on its attributes.
+    def provide_node(self, image: EvaluatedPic) -> ImageStorageNode:
+        """Returns a node that fits the image object based on its attributes.
 
         Takes into account primary category, all present subcategories and their
         respective evaluations. If several nodes match the criteria, finds the
-        one that has empty space for the image.
+        one that has empty space for the image. If a fitting node does not exist,
+        creates it.
 
         Args:
             image (EvaluatedPic): image the node is searched for.
