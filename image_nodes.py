@@ -139,9 +139,24 @@ class ImageNodesHolder:
         image_nodes (Dict[str, ImageStorageNode]): mapping of nodes to categories.
     """
 
-    def __init__(self) -> None:
-        """Initialize node container."""
-        self.image_nodes: Dict[str, ImageStorageNode] = {}
+    def __init__(self, image_nodes: Dict[str, ImageStorageNode]) -> None:
+        """Initialize node container.
+
+        Args:
+            image_nodes (Dict[str, ImageStorageNode]): mapping of image nodes
+                with their categories in hierarchy notation.
+        """
+        self.__image_nodes = image_nodes
+
+    @property
+    def image_nodes(self):
+        """Image nodes property.
+
+        Returns:
+            Dict[str, ImageStorageNode] mapping of image nodes with their
+            categories in hierarchy notation.
+        """
+        return self.__image_nodes
 
     def find_node(self, image: EvaluatedPic) -> ImageStorageNode:
         """Returns node that fits the image object based on its attributes.
@@ -157,14 +172,21 @@ class ImageNodesHolder:
         """
         raise NotImplementedError
 
-    def _filter_json_files(self, files: List[str]) -> List[str]:
-        """Filters json files from the list of files.
+
+class DataBank:
+    """ Responsible for saving evaluated image info to a physical storage in JSON."""
+    @staticmethod
+    def filter_files(files: List[str], filters: str | List[str]) -> List[str]:
+        """Filters files with wanted formats from the list of files.
 
         Args:
             files (List[str]): files with different formats.
+            filters (str | List[str]): names of formats to be in returned list.
         Returns:
-            List[str] of files with json format.
+            List[str] of files with filtered formats.
         """
+        if isinstance(filters, str):
+            filters = [filters]
         filtered_files = []
         for file in files:
             if file.split(".")[-1].lower() == STORAGE_FORMAT:
@@ -172,7 +194,8 @@ class ImageNodesHolder:
 
         return filtered_files
 
-    def read(self, path: str = DEFAULT_PATH):
+    @classmethod
+    def read(cls, path: str = DEFAULT_PATH) -> ImageNodesHolder:
         """Read the databank folder.
 
         The root must contain folder structure fitting categories and json files
@@ -181,11 +204,12 @@ class ImageNodesHolder:
         Args:
             path (str): path to the root folder. Defaults to DEFAULT_PATH.
         """
+        image_nodes = {}
         for folder, _, files in os.walk(path):
             if len(files) == 0:
                 continue
             rel_path = os.path.relpath(folder, start=path)
-            files = self._filter_json_files(files)
+            files = cls.filter_files(files, STORAGE_FORMAT)
 
             nodes = []
             for file in files:
@@ -201,18 +225,24 @@ class ImageNodesHolder:
                         evaluated_pics=eval_pics_json_data,
                     )
                 )
-            self.image_nodes[rel_path] = nodes
+            image_nodes[rel_path] = nodes
+        return ImageNodesHolder(image_nodes)
 
-    def save(self, root_path: str = DEFAULT_PATH):
+    @staticmethod
+    def save(
+        nodes_holder: ImageNodesHolder,
+        root_path: str = DEFAULT_PATH,
+    ):
         """Save node structure to the databank folder.
 
         The root contains folder structure fitting categories and json files
         with lists of evaluated images data.
 
         Args:
+            nodes_holder (ImageNodesHolder): nodes structure to save.
             root_path (str): path to the root folder. Defaults to DEFAULT_PATH.
         """
-        for path, image_nodes in self.image_nodes.items():
+        for path, image_nodes in nodes_holder.image_nodes.items():
             for node in image_nodes:
                 evaluated_images = []
                 for img in node.images:
