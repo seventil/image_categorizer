@@ -179,10 +179,10 @@ class ImageNodesHolder:
     """Parent for image nodes that maps nodes to their respective categories.
 
     Attributes:
-        image_nodes (Dict[str, ImageStorageNode]): mapping of nodes to categories.
+        image_nodes (Dict[str, List[ImageStorageNode]]): mapping of nodes to categories.
     """
 
-    def __init__(self, image_nodes: Dict[str, ImageStorageNode]) -> None:
+    def __init__(self, image_nodes: Dict[str, List[ImageStorageNode]]) -> None:
         """Initialize node container.
 
         Args:
@@ -196,25 +196,36 @@ class ImageNodesHolder:
         """Image nodes property.
 
         Returns:
-            Dict[str, ImageStorageNode] mapping of image nodes with their
-            categories in hierarchy notation.
+            Dict[str, List[ImageStorageNode]] mapping of image nodes with their
+                categories in hierarchy notation.
         """
         return self.__image_nodes
 
-    def provide_node(self, image: EvaluatedPic) -> ImageStorageNode:
-        """Returns a node that fits the image object based on its attributes.
+    def post_pic(self, image: EvaluatedPic) -> None:
+        """Fits the image object based on its attributes.
 
         Takes into account primary category, all present subcategories and their
         respective evaluations. If several nodes match the criteria, finds the
         one that has empty space for the image. If a fitting node does not exist,
         creates it.
 
+        Asserts categories of the EvaluatedPic are sorted as per the schema.
+        Asserts that the image is not present in the nodes, otherwise creates
+            a duplicate.
+
         Args:
             image (EvaluatedPic): image the node is searched for.
-        Returns:
-            ImageStorageNode fitting the criteria.
         """
-        raise NotImplementedError
+        relative_path = os.path.join(image.categories)
+        sibling_nodes = self.__image_nodes.get(relative_path)
+        fitting_mark_nodes = [
+            node
+            for node in sibling_nodes
+            if node.ranks == (image.evals[rank] for rank in image.categories)
+        ]
+        for node in fitting_mark_nodes:
+            if node.add_image(image):
+                return
 
 
 class DataBank:
