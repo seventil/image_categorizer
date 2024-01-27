@@ -7,6 +7,7 @@ DEFAULT_ENCODING = "utf-8"
 JSON_INDENT = 4
 MAX_ITEMS_PER_NODE = 1000
 STORAGE_FORMAT = "json"
+IMAGE_FILE_FORMATS = ['jpg', 'jpeg', 'png', 'webp']
 
 
 class DataBankSchema:
@@ -232,7 +233,7 @@ class DataBank:
     """Responsible for saving evaluated image info to a physical storage in JSON."""
 
     @staticmethod
-    def filter_files(files: List[str], filters: str | List[str]) -> List[str]:
+    def filter_files(files: List[str], filters: str | List[str] = STORAGE_FORMAT) -> List[str]:
         """Filters files with wanted formats from the list of files.
 
         Args:
@@ -245,7 +246,7 @@ class DataBank:
             filters = [filters]
         filtered_files = []
         for file in files:
-            if file.split(".")[-1].lower() == STORAGE_FORMAT:
+            if file.split(".")[-1].lower() in filters:
                 filtered_files.append(file)
 
         return filtered_files
