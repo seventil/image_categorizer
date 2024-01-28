@@ -7,7 +7,7 @@ DEFAULT_ENCODING = "utf-8"
 JSON_INDENT = 4
 MAX_ITEMS_PER_NODE = 1000
 STORAGE_FORMAT = "json"
-IMAGE_FILE_FORMATS = ['jpg', 'jpeg', 'png', 'webp']
+IMAGE_FILE_FORMATS = ["jpg", "jpeg", "png", "webp"]
 
 
 class DataBankSchema:
@@ -53,12 +53,12 @@ class EvaluatedPic:
         else:
             self.categories = categories
         if evals is None:
-            self.evals = {}
+            self.__evals = {}
         else:
-            self.evals = evals
+            self.__evals = evals
         self.resize = resize
 
-    def add_category(self, category: str, category_priority: Tuple[str]) -> None:
+    def add_category(self, category: str, category_priority: Tuple[str, ...]) -> None:
         """Add a category that the image fits into.
 
         Args:
@@ -71,13 +71,13 @@ class EvaluatedPic:
             self.categories.append(category)
             self.__sort_categories(category_priority)
 
-    def __sort_categories(self, category_priority: Tuple[str]) -> None:
+    def __sort_categories(self, category_priority: Tuple[str, ...]) -> None:
         """Sort categories according to schema priorities.
 
         Args:
             category_priority (Tuple[str]): sorted categories from schema, where
                 lowest index indicates higher folder (closer to root) in the databank
-                structure.
+                structure.self.__evals
         """
         image_cat_idx = 0
         for cat in category_priority:
@@ -95,7 +95,11 @@ class EvaluatedPic:
             mark (int): relative evaluation mark for the image in the specified
                 category.
         """
-        self.evals[category] = mark
+        self.__evals[category] = mark
+
+    @property
+    def evals(self) -> Dict[str, int]:
+        return self.__evals.copy()
 
 
 class ImageStorageNode:
@@ -233,7 +237,9 @@ class DataBank:
     """Responsible for saving evaluated image info to a physical storage in JSON."""
 
     @staticmethod
-    def filter_files(files: List[str], filters: str | List[str] = STORAGE_FORMAT) -> List[str]:
+    def filter_files(
+        files: List[str], filters: str | List[str] = STORAGE_FORMAT
+    ) -> List[str]:
         """Filters files with wanted formats from the list of files.
 
         Args:
