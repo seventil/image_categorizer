@@ -1,6 +1,5 @@
 import json
 import os
-from typing import Dict, List, Tuple
 
 DEFAULT_PATH = "databank"
 DEFAULT_ENCODING = "utf-8"
@@ -8,6 +7,11 @@ JSON_INDENT = 4
 MAX_ITEMS_PER_NODE = 1000
 STORAGE_FORMAT = "json"
 IMAGE_FILE_FORMATS = ["jpg", "jpeg", "png", "webp"]
+
+type Categories = list[str]
+type Evaluations = dict[str, int]
+type SiblingNodes = list[ImageStorageNode]
+type NodesPathMap = dict[str, SiblingNodes]
 
 
 class DataBankSchema:
@@ -23,8 +27,8 @@ class EvaluatedPic:
 
     Attributes:
         storage_path (str): describes where the image is storred.
-        categories (List[str]): categories (from schema) that the image fits.
-        evals (Dict[str, int]): evaluations that where set for the image.
+        categories (Categories): categories (from schema) that the image fits.
+        evals (Evaluations): evaluations that where set for the image.
         resize (bool): if the image should be resized to save storage space.
             Defaults to True. Should be set to False if high-definition texture
             is important.
@@ -33,16 +37,16 @@ class EvaluatedPic:
     def __init__(
         self,
         storage_path: str,
-        categories: List[str] = None,
-        evals: Dict[str, int] = None,
+        categories: Categories | None = None,
+        evals: Evaluations | None = None,
         resize: bool = True,
     ) -> None:
         """Initialize the object with all attributes.
 
         Args:
             storage_path (str): describes where the image is storred.
-            categories (List[str]): categories (from schema) that the image fits.
-            evals (Dict[str, int]): evaluations that where set for the image.
+            categories (Categories | None): categories (from schema) that the image fits.
+            evals (Evaluations | None): evaluations that where set for the image.
             resize (bool): if the image should be resized to save storage space.
                 Defaults to True. Should be set to False if high-definition texture
                 is important.
@@ -58,12 +62,12 @@ class EvaluatedPic:
             self.__evals = evals
         self.resize = resize
 
-    def add_category(self, category: str, category_priority: Tuple[str, ...]) -> None:
+    def add_category(self, category: str, category_priority: tuple[str, ...]) -> None:
         """Add a category that the image fits into.
 
         Args:
             category (str): name of the category from the schema file.
-            category_priority (Tuple[str]): sorted categories from schema, where
+            category_priority (tuple[str, ...]): sorted categories from schema, where
                 lowest index indicates higher folder (closer to root) in the databank
                 structure.
         """
@@ -71,11 +75,11 @@ class EvaluatedPic:
             self.categories.append(category)
             self.__sort_categories(category_priority)
 
-    def __sort_categories(self, category_priority: Tuple[str, ...]) -> None:
+    def __sort_categories(self, category_priority: tuple[str, ...]) -> None:
         """Sort categories according to schema priorities.
 
         Args:
-            category_priority (Tuple[str]): sorted categories from schema, where
+            category_priority (tuple[str, ...]): sorted categories from schema, where
                 lowest index indicates higher folder (closer to root) in the databank
                 structure.self.__evals
         """
@@ -98,7 +102,7 @@ class EvaluatedPic:
         self.__evals[category] = mark
 
     @property
-    def evals(self) -> Dict[str, int]:
+    def evals(self) -> Evaluations:
         return self.__evals.copy()
 
 
@@ -110,38 +114,38 @@ class ImageStorageNode:
         bucket (str | None): bucket that splits the images by MAX_ITEMS_PER_NODE.
         name (str | None): name of the node, containing info on it's ranks for
             categories and subcategories and its bucket.
-        images (List[EvaluatedPic]): evaluated images.
+        images (SiblingNodes): evaluated images.
     """
 
     def __init__(
         self,
         name: str | None = None,
-        ranks: Tuple[int] | None = None,
+        ranks: tuple[int] | None = None,
         bucket: str | None = None,
-        evaluated_pics: List[dict] | None = None,
+        evaluated_pics: list[dict] | None = None,
     ) -> None:
         """Instantiate the node with possible rank and json data for pics.
 
         Args:
-            name (str | None): name of the node.
-            ranks (Tuple[int] | None): category mark of the images contained in the node.
-            bucket (str | None): bucket that splits the images by MAX_ITEMS_PER_NODE.
-            evaluated_pics (List[dict] | None): json data for pics. Defaults to None.
+            name (str | None): name of the node. Defaults to None.
+            ranks (tuple[int] | None): category mark of the images contained in the node. Defaults to None.
+            bucket (str | None): bucket that splits the images by MAX_ITEMS_PER_NODE. Defaults to None.
+            evaluated_pics (list[dict] | None): json data for pics. Defaults to None.
         """
         if name is not None:
             self.__name: str = name
             name = name.split("_")
             self.bucket: str = name.pop(-1)
-            self.ranks: Tuple[int] = tuple(map(int, name))
+            self.ranks: tuple[int, ...] = tuple(map(int, name))
         if ranks is not None:
             self.ranks = ranks
         if bucket is not None:
             self.bucket = bucket
 
         if evaluated_pics is None:
-            self.images: List[EvaluatedPic] = []
+            self.images: SiblingNodes = []
         else:
-            self.images: List[EvaluatedPic] = [
+            self.images: SiblingNodes = [
                 EvaluatedPic(
                     storage_path=pic.get(DataBankSchema.storage_path),
                     categories=pic.get(DataBankSchema.categories),
@@ -184,10 +188,10 @@ class ImageNodesHolder:
     """Parent for image nodes that maps nodes to their respective categories.
 
     Attributes:
-        image_nodes (Dict[str, List[ImageStorageNode]]): mapping of nodes to categories.
+        image_nodes (NodesPathMap): mapping of nodes to categories.
     """
 
-    def __init__(self, image_nodes: Dict[str, List[ImageStorageNode]]) -> None:
+    def __init__(self, image_nodes: NodesPathMap) -> None:
         """Initialize node container.
 
         Args:
@@ -201,7 +205,7 @@ class ImageNodesHolder:
         """Image nodes property.
 
         Returns:
-            Dict[str, List[ImageStorageNode]] mapping of image nodes with their
+            NodesPathMap mapping of image nodes with their
                 categories in hierarchy notation.
         """
         return self.__image_nodes
@@ -238,8 +242,8 @@ class DataBank:
 
     @staticmethod
     def filter_files(
-        files: List[str], filters: str | List[str] = STORAGE_FORMAT
-    ) -> List[str]:
+        files: list[str], filters: str | list[str] = STORAGE_FORMAT
+    ) -> list[str]:
         """Filters files with wanted formats from the list of files.
 
         Args:
@@ -267,14 +271,14 @@ class DataBank:
         Args:
             path (str): path to the root folder. Defaults to DEFAULT_PATH.
         """
-        image_nodes = {}
+        image_nodes: NodesPathMap = {}
         for folder, _, files in os.walk(path):
             if len(files) == 0:
                 continue
             rel_path = os.path.relpath(folder, start=path)
             files = cls.filter_files(files, STORAGE_FORMAT)
 
-            nodes = []
+            nodes: SiblingNodes = []
             for file in files:
                 full_path = os.path.join(folder, file)
                 with open(full_path, "r", encoding=DEFAULT_ENCODING) as fstream:

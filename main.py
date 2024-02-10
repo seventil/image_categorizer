@@ -1,22 +1,21 @@
-from typing import Sequence
-
 from kivy.app import App
-from kivy.core.window import Window
-from kivy.lang import Builder
 from kivy.logger import Logger
 from kivy.properties import ObjectProperty
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.checkbox import CheckBox
 from kivy.uix.label import Label
-from kivy.uix.screenmanager import Screen, ScreenManager
+from kivy.uix.screenmanager import Screen
 
-from app_logic import (DEFAULT_EVAL_RANGE, EvaluationSchema, ListCursor,
-                       read_schema, scan_images_input)
+from app_logic import (
+    DEFAULT_EVAL_RANGE,
+    EvaluationSchema,
+    ListCursor,
+    scan_images_input,
+)
 from image_nodes import EvaluatedPic
 
-Window.size = (1028, 640)
-Builder.load_file("main_app.kv")
 Logger.setLevel("DEBUG")
+APP_UI_TEMPLATE_FILE = "main_app.kv"
 
 
 class LabeledCheckBox(CheckBox):
@@ -28,12 +27,11 @@ class LabeledCheckBox(CheckBox):
 
 class MainScreen(Screen):
     def __init__(self, **kwargs):
-        super(MainScreen, self).__init__(name=kwargs.get("name"))
+        super(MainScreen, self).__init__(name="main_screen")
         self.images_to_evaluate = []
         self.cursor = None
-        self.eval_schema: EvaluationSchema = kwargs["schema"]
+        self.eval_schema: EvaluationSchema = App.get_running_app().evaluation_schema
 
-    def on_enter(self):
         eval_box: BoxLayout = self.ids.eval_box
 
         for cat in self.eval_schema.total_evals:
@@ -60,9 +58,11 @@ class MainScreen(Screen):
         self.images_to_evaluate: list[str | EvaluatedPic] = scan_images_input()
         if len(self.images_to_evaluate) > 0:
             self.cursor = ListCursor(len(self.images_to_evaluate))
-            self.__load_new_image()
         else:
             raise NotImplementedError("input scan folder is empty")
+
+    def on_enter(self):
+        self.__load_new_image()
 
     def on_leave(self):
         pass
@@ -106,12 +106,14 @@ class MainScreen(Screen):
                 eval_checkboxes[cur_entity_eval].active = True
 
 
+class MenuScreen(Screen):
+    pass
+
+
 class MainApp(App):
-    def build(self):
-        evaluation_schema = EvaluationSchema()
-        sm = ScreenManager()
-        sm.add_widget(MainScreen(name="main_screen", schema=evaluation_schema))
-        return sm
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.evaluation_schema = EvaluationSchema()
 
 
 if __name__ == "__main__":
