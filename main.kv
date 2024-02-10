@@ -47,8 +47,8 @@ ScreenManager:
                     size_hint_y: 12
                     source: 'Kivy-logo.jpg'
                 Button:
-                    size_hint_y: 1
-                    text: 'Goto settings'
+                    size_hint: .3, 1
+                    text: 'Menu'
                     on_press:
                         app.root.transition.direction = 'left'
                         app.root.current = 'menu_screen'
@@ -58,15 +58,23 @@ ScreenManager:
                 orientation: 'vertical'
 <MenuScreen>:
     color: "black"
-    BoxLayout:
-        orientation: 'vertical'
-        Label:
-            text: 'ASCII Life'
-            font_size: 50
+    RelativeLayout:
         Button:
-            text_color: "white"
-            text: 'Oh no go back'
-            font_size: 24
+            text: 'Scan input'
+            pos_hint: {'center_x': 0.3, 'center_y': 0.6}
+            size_hint: .3, .1
+            on_press: root._load_inputs()
             on_release: app.root.current = 'main_screen'
-        Label:
-            text: 'Menu label'
+        TextInput:
+            hint_text: 'inputs'
+            padding_y: [18,0]
+            id: inputs_text
+            font_size: 18
+            size_hint: .4, .1
+            pos_hint: {'center_x': 0.7, 'center_y': 0.6}
+        Button:
+            text: 'View databank'
+            pos_hint: {'center_x': 0.5, 'center_y': 0.2}
+            size_hint: .5, .1
+            on_press: root._load_databank()
+            on_release: app.root.current = 'main_screen'

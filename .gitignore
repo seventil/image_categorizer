@@ -2,3 +2,5 @@ schema.json
 databank/
 inputs/
 __pycache__
+venv
+.vscode

@@ -6,12 +6,8 @@ from kivy.uix.checkbox import CheckBox
 from kivy.uix.label import Label
 from kivy.uix.screenmanager import Screen
 
-from app_logic import (
-    DEFAULT_EVAL_RANGE,
-    EvaluationSchema,
-    ListCursor,
-    scan_images_input,
-)
+from app_logic import (DEFAULT_EVAL_RANGE, SCAN_DEFAULT_PATH, EvaluationSchema,
+                       ListCursor, scan_images_input)
 from image_nodes import EvaluatedPic
 
 Logger.setLevel("DEBUG")
@@ -107,7 +103,12 @@ class MainScreen(Screen):
 
 
 class MenuScreen(Screen):
-    pass
+    def _load_databank(self):
+        pass
+
+    def _load_inputs(self):
+        user_input_path = self.ids.inputs_text.text \
+            or self.ids.inputs_text.hint_text
 
 
 class MainApp(App):

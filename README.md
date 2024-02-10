@@ -1,4 +1,5 @@
 # image_categorizer
+## General description
 I used to collect a lot of images as references for digital paintings and studies. One of the best 
 ways that I found in studying images is comparing them using different attributes in mind.
 It is also a great way to build up taste - compare two images, see what you like more, repeat many 
@@ -16,6 +17,23 @@ On top of evaluations listed in a schema, images are evaluated on category scale
 Photography categry with concept subcategory may include evaulations on color and texture
 which gives 4 evaulations total: photography, concept, color, texture.
 
+## Project setup
+prerequisites:
+```bash
+python3.12 -m venv ./venv/
+source venv/bin/activate
+pip3 install kivy
+```
+
+to run:
+```bash
+python3 main.py
+```
+
+
+
+## Storing evaluation information
+### json databank
 Here is a view of how json databank describing images and their evaulations are storred compared to
 how the actual images are stored. A, B, C... indexes stand to store no more than 1000 images in 
 one folder and to differentiate between how they're evaluated. If no evaluation ranges are present 
@@ -54,5 +72,3 @@ For subcategories naming goes the following way: <category mark>_<subcategory ma
                 ...
                 - 1_1_A img1000
 
-## Project setup
-install requirements
