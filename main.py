@@ -13,9 +13,17 @@ APP_UI_TEMPLATE_FILE = "main_app.kv"
 
 
 class MainScreen(Screen):
+    """ Main App screen that shows an Image and checkboxes for its evlauation.
+
+    Atributes:
+        image_handler (OnScreenImageHandler | None): hanlder for image navigation
+            in scanned folder. 
+        eval_schema (EvaluationSchema): contains evaluation categories.
+    """
     screen_name = "main_screen"
 
     def __init__(self, **kwargs):
+        """Initialize screen object with evaluation schema and corresponding checkboxes."""
         super(MainScreen, self).__init__(name=MainScreen.screen_name)
 
         self.image_handler: OnScreenImageHandler | None = None
@@ -24,28 +32,38 @@ class MainScreen(Screen):
         self.__set_up_evaluation_checkboxes()
 
     def on_enter(self):
+        """Each time on screen enter render an image."""
         self.__load_new_image()
 
     def on_leave(self):
+        """Each time on leaving the screen save the evaluations."""
         pass
 
     def set_image_handler(self, handler: OnScreenImageHandler) -> None:
+        """Set the image handler from another screen."""
         self.image_handler = handler
 
     def _load_previous_image(self):
+        """Save current evaluated image to appropriate Node and physically and load prev image."""
         self.image_handler.previous()
         self.__load_new_image()
 
     def _load_next_image(self):
+        """Save current evaluated image to appropriate Node and physically. and load next image."""
         self.image_handler.next()
         self.__load_new_image()
 
     def __load_new_image(self):
+        """Reload current image and reload evaluation checkboxes."""
         self.eval_schema.reload_evaluations(self.image_handler.current.evals)
         self.ids.img_name.text = self.image_handler.current.storage_path
         self.ids.image.source = self.image_handler.current.storage_path
 
     def __set_up_evaluation_checkboxes(self) -> None:
+        """Dynamically add evaluation checkboxes using eval_schema.
+        
+        When creating checkboxes in a category should check up on databank.
+        """
         eval_box: BoxLayout = self.ids.eval_box
         for cat in self.eval_schema.total_evals:
             category_vbox = BoxLayout(orientation="vertical")
@@ -68,7 +86,8 @@ class MainScreen(Screen):
 
             eval_box.add_widget(category_vbox)
 
-    def _on_checkbox_active(self, checkbox) -> None:
+    def _on_checkbox_active(self, checkbox: LabeledCheckBox) -> None:
+        """Update image evaluations and, if needed, give it a new category."""
         if checkbox.group in self.eval_schema.prioritized_categories:
             self.image_handler.current.add_category(
                 checkbox.group, self.eval_schema.prioritized_categories
@@ -77,11 +96,15 @@ class MainScreen(Screen):
 
 
 class MenuScreen(Screen):
+    """Screen that allows to scan folder or databank for images to evaluate."""
+
     def _load_databank(self):
+        """Load eval image info from databank and go through its images."""
         self.parent.current = MainScreen.screen_name
         raise NotImplementedError("databank is not ready")
 
     def _load_inputs(self):
+        """Load a list of images in a user-specified directory."""
         user_input_path = self.ids.inputs_text.text or self.ids.inputs_text.hint_text
         image_handler = OnScreenImageHandler(user_input_path)
         
@@ -100,7 +123,10 @@ class MenuScreen(Screen):
 
 
 class MainApp(App):
+    """Main kivy app."""
+
     def __init__(self, *args, **kwargs) -> None:
+        """Initiate the kivy app object and read eval schema."""
         super().__init__(*args, **kwargs)
         self.evaluation_schema = EvaluationSchema()
 

@@ -30,18 +30,19 @@ to run:
 python3 main.py
 ```
 
-
-
 ## Storing evaluation information
 ### json databank
-Here is a view of how json databank describing images and their evaulations are storred compared to
+Here is a view of how json databank describing images and their evaulations are stored compared to
 how the actual images are stored. A, B, C... indexes stand to store no more than 1000 images in 
 one folder and to differentiate between how they're evaluated. If no evaluation ranges are present 
-yet, it's only two: 1/2. The higher the mark - the better the parameter. When working through
-storred images it's important to do relative evaluations by comparison. If 1/2 is not enough and
+yet, it's only two: 1/2. The higher the mark - the better the parameter. 
+
+When working through
+stored images it's important to do relative evaluations by comparison. If 1/2 is not enough and
 you'd want something in between: 2 shifts to 3, and 2 becomes empty, now you can restructure 
 1 into 1,2; 3 into 2,3 and after that compare whatever you have in 2 with each other with new shift 
 3->4, 2->2,3.
+
 For subcategories naming goes the following way: <category mark>_<subcategory mark>_<literal index>
 
 - databank

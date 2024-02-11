@@ -1,6 +1,7 @@
 schema.json
-databank/
-inputs/
+databank*
+inputs*
+outputs
 __pycache__
 venv
 .vscode
