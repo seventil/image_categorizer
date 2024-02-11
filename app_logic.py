@@ -3,11 +3,46 @@ import os
 
 from kivy.uix.checkbox import CheckBox
 
-from image_nodes import IMAGE_FILE_FORMATS, DataBank, DataBankSchema
+from image_nodes import (IMAGE_FILE_FORMATS, DataBank, DataBankSchema,
+                         EvaluatedPic)
 
 SCAN_DEFAULT_PATH = "inputs"
 DEFAULT_SCHEMA_PATH = "schema.json"
 DEFAULT_EVAL_RANGE = 2
+
+
+class OnScreenImageHandler:
+    def __init__(self, user_input_path: str):
+        self.__images: list[str | EvaluatedPic] = scan_images_input(user_input_path)
+        self.cursor = ListCursor(len(self.__images))
+        self.__current = None
+        self.__assign_current()
+
+    def next(self) -> None:
+        self.cursor >> 1
+        self.__assign_current()
+
+    def previous(self) -> None:
+        self.cursor << 1
+        self.__assign_current()
+
+    @property
+    def current(self) -> EvaluatedPic | None:
+        return self.__current
+    
+    @property
+    def empty(self) -> bool:
+        return len(self.__images) == 0
+
+    def __assign_current(self) -> None:
+        if self.empty:
+            return
+        new_image = self.__images[int(self.cursor)]
+        if not isinstance(new_image, EvaluatedPic):
+            self.__current = EvaluatedPic(new_image)
+            self.__images[int(self.cursor)] = self.__current
+        else:
+            self.__current = new_image
 
 
 def scan_images_input(path: str = SCAN_DEFAULT_PATH) -> list:
