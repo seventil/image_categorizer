@@ -52,6 +52,7 @@ For subcategories naming goes the following way: <category mark>_<subcategory ma
         - category1_1_subcategory1 folder
             - 1_1_A.json
 
+### evaluated images storage
 - outputs
     - category1 folder
         - 1_A folder

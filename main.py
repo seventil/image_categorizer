@@ -1,25 +1,15 @@
 from kivy.app import App
 from kivy.logger import Logger
-from kivy.properties import ObjectProperty
 from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.checkbox import CheckBox
 from kivy.uix.label import Label
 from kivy.uix.popup import Popup
 from kivy.uix.screenmanager import Screen
 
-from app_logic import (DEFAULT_EVAL_RANGE, EvaluationSchema, ListCursor,
-                       OnScreenImageHandler, scan_images_input)
-from image_nodes import EvaluatedPic
+from app_logic import DEFAULT_EVAL_RANGE, OnScreenImageHandler
+from eval_schema import EvaluationSchema, LabeledCheckBox
 
 Logger.setLevel("DEBUG")
 APP_UI_TEMPLATE_FILE = "main_app.kv"
-
-
-class LabeledCheckBox(CheckBox):
-    def __init__(self, **kwargs):
-        super(LabeledCheckBox, self).__init__(**kwargs)
-
-    label = ObjectProperty(None, allownone=True)
 
 
 class MainScreen(Screen):
@@ -31,8 +21,32 @@ class MainScreen(Screen):
         self.image_handler: OnScreenImageHandler | None = None
         self.eval_schema: EvaluationSchema = App.get_running_app().evaluation_schema
 
-        eval_box: BoxLayout = self.ids.eval_box
+        self.__set_up_evaluation_checkboxes()
 
+    def on_enter(self):
+        self.__load_new_image()
+
+    def on_leave(self):
+        pass
+
+    def set_image_handler(self, handler: OnScreenImageHandler) -> None:
+        self.image_handler = handler
+
+    def _load_previous_image(self):
+        self.image_handler.previous()
+        self.__load_new_image()
+
+    def _load_next_image(self):
+        self.image_handler.next()
+        self.__load_new_image()
+
+    def __load_new_image(self):
+        self.eval_schema.reload_evaluations(self.image_handler.current.evals)
+        self.ids.img_name.text = self.image_handler.current.storage_path
+        self.ids.image.source = self.image_handler.current.storage_path
+
+    def __set_up_evaluation_checkboxes(self) -> None:
+        eval_box: BoxLayout = self.ids.eval_box
         for cat in self.eval_schema.total_evals:
             category_vbox = BoxLayout(orientation="vertical")
 
@@ -54,44 +68,12 @@ class MainScreen(Screen):
 
             eval_box.add_widget(category_vbox)
 
-    def on_enter(self):
-        self.__load_new_image()
-
-    def on_leave(self):
-        pass
-
-    def set_image_handler(self, handler: OnScreenImageHandler) -> None:
-        self.image_handler = handler
-
     def _on_checkbox_active(self, checkbox) -> None:
-        if checkbox.group in self.eval_schema.priority_categories:
-            self.current_eval_entity.add_category(
-                checkbox.group, self.eval_schema.priority_categories
+        if checkbox.group in self.eval_schema.prioritized_categories:
+            self.image_handler.current.add_category(
+                checkbox.group, self.eval_schema.prioritized_categories
             )
-        self.current_eval_entity.evaluate(checkbox.group, checkbox.label)
-
-    def _load_previous_image(self):
-        self.image_handler.previous()
-        self.__load_new_image()
-
-    def _load_next_image(self):
-        self.image_handler.next()
-        self.__load_new_image()
-
-    def __load_new_image(self):
-        self.__reload_evaluations()
-        self.ids.img_name.text = self.image_handler.current.storage_path
-        self.ids.image.source = self.image_handler.current.storage_path
-
-    def __reload_evaluations(self) -> None:
-        for eval_category in self.eval_schema.total_evals:
-            eval_checkboxes = self.eval_schema.get_checks(eval_category)
-            cur_entity_eval = self.image_handler.current.evals.get(eval_category)
-
-            for checkbox in eval_checkboxes.values():
-                checkbox.active = False
-            if cur_entity_eval is not None:
-                eval_checkboxes[cur_entity_eval].active = True
+        self.image_handler.current.evaluate(checkbox.group, checkbox.label)
 
 
 class MenuScreen(Screen):
