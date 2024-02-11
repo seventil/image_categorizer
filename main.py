@@ -4,10 +4,11 @@ from kivy.properties import ObjectProperty
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.checkbox import CheckBox
 from kivy.uix.label import Label
+from kivy.uix.popup import Popup
 from kivy.uix.screenmanager import Screen
 
-from app_logic import (DEFAULT_EVAL_RANGE, SCAN_DEFAULT_PATH, EvaluationSchema,
-                       ListCursor, scan_images_input)
+from app_logic import (DEFAULT_EVAL_RANGE, EvaluationSchema, ListCursor,
+                       scan_images_input)
 from image_nodes import EvaluatedPic
 
 Logger.setLevel("DEBUG")
@@ -22,8 +23,10 @@ class LabeledCheckBox(CheckBox):
 
 
 class MainScreen(Screen):
+    screen_name = "main_screen"
+
     def __init__(self, **kwargs):
-        super(MainScreen, self).__init__(name="main_screen")
+        super(MainScreen, self).__init__(name=MainScreen.screen_name)
         self.images_to_evaluate = []
         self.cursor = None
         self.eval_schema: EvaluationSchema = App.get_running_app().evaluation_schema
@@ -50,12 +53,6 @@ class MainScreen(Screen):
                 category_checks_hbox.add_widget(check)
 
             eval_box.add_widget(category_vbox)
-
-        self.images_to_evaluate: list[str | EvaluatedPic] = scan_images_input()
-        if len(self.images_to_evaluate) > 0:
-            self.cursor = ListCursor(len(self.images_to_evaluate))
-        else:
-            raise NotImplementedError("input scan folder is empty")
 
     def on_enter(self):
         self.__load_new_image()
@@ -104,11 +101,27 @@ class MainScreen(Screen):
 
 class MenuScreen(Screen):
     def _load_databank(self):
-        pass
+        self.parent.current = MainScreen.screen_name
 
     def _load_inputs(self):
-        user_input_path = self.ids.inputs_text.text \
-            or self.ids.inputs_text.hint_text
+        user_input_path = self.ids.inputs_text.text or self.ids.inputs_text.hint_text
+        
+        images_to_evaluate: list[str | EvaluatedPic] = scan_images_input(user_input_path)
+        if len(images_to_evaluate) == 0:
+            popup = Popup(
+                title='Folder scan warning', 
+                content=Label(text='The input path does not contain images'),
+                auto_dismiss=True,
+                size_hint=(0.4, 0.4)
+            )
+            popup.open()
+            return
+
+        scrs = self.parent.get_screen(MainScreen.screen_name)
+        scrs.images_to_evaluate = images_to_evaluate
+        scrs.cursor = ListCursor(len(images_to_evaluate))
+
+        self.parent.current = MainScreen.screen_name
 
 
 class MainApp(App):

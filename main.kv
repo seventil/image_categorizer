@@ -64,7 +64,7 @@ ScreenManager:
             pos_hint: {'center_x': 0.3, 'center_y': 0.6}
             size_hint: .3, .1
             on_press: root._load_inputs()
-            on_release: app.root.current = 'main_screen'
+            # on_release: app.root.current = 'main_screen'
         TextInput:
             hint_text: 'inputs'
             padding_y: [18,0]
@@ -77,4 +77,4 @@ ScreenManager:
             pos_hint: {'center_x': 0.5, 'center_y': 0.2}
             size_hint: .5, .1
             on_press: root._load_databank()
-            on_release: app.root.current = 'main_screen'
+            # on_release: app.root.current = 'main_screen'
