@@ -12,6 +12,7 @@ IMAGE_FILE_FORMATS = ["jpg", "jpeg", "png", "webp"]
 type SiblingNodes = list[ImageStorageNode]
 type NodesPathMap = dict[str, SiblingNodes]
 type NodePics = list[EvaluatedPic]
+type SortedRanks = tuple[int, ...]
 
 
 class EvaluatedPic:
@@ -106,7 +107,7 @@ class ImageStorageNode:
     """A node to store evaluated image objects differentiated by categories.
 
     Attributes:
-        ranks (Tuple[int] | None): category mark of the images contained in the node.
+        ranks (SortedRanks | None): category mark of the images contained in the node.
         bucket (str | None): bucket that splits the images by MAX_ITEMS_PER_NODE.
         name (str | None): name of the node, containing info on it's ranks for
             categories and subcategories and its bucket.
@@ -116,7 +117,7 @@ class ImageStorageNode:
     def __init__(
         self,
         name: str | None = None,
-        ranks: tuple[int] | None = None,
+        ranks: SortedRanks | None = None,
         bucket: str | None = None,
         evaluated_pics: list[dict] | None = None,
     ) -> None:
@@ -124,7 +125,7 @@ class ImageStorageNode:
 
         Args:
             name (str | None): name of the node. Defaults to None.
-            ranks (tuple[int] | None): category mark of the images contained in the node. Defaults to None.
+            ranks (SortedRanks | None): category mark of the images contained in the node. Defaults to None.
             bucket (str | None): bucket that splits the images by MAX_ITEMS_PER_NODE. Defaults to None.
             evaluated_pics (list[dict] | None): json data for pics. Defaults to None.
         """
@@ -132,7 +133,7 @@ class ImageStorageNode:
             self.__name: str = name
             name = name.split("_")
             self.bucket: str = name.pop(-1)
-            self.ranks: tuple[int, ...] = tuple(map(int, name))
+            self.ranks: SortedRanks = tuple(map(int, name))
         if ranks is not None:
             self.ranks = ranks
         if bucket is not None:
