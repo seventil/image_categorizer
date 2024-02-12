@@ -46,12 +46,23 @@ ScreenManager:
                     id: image
                     size_hint_y: 12
                     source: 'Kivy-logo.jpg'
-                Button:
-                    size_hint: .3, 1
-                    text: 'Menu'
-                    on_press:
-                        app.root.transition.direction = 'left'
-                        app.root.current = 'menu_screen'
+                BoxLayout:
+                    size_hint_x: .3
+                    id: bottom_menu_box
+                    color: 'black'
+                    orientation: 'horizontal'
+                    Button:
+                        size_hint: .3, 1
+                        id: finish_scan_btn
+                        text: 'Finish Scan'
+                        on_press:
+                            app.root.transition.direction = 'left'
+                            app.root.current = 'menu_screen'
+                    Button:
+                        size_hint: .3, 1
+                        id: reset_evals_btn
+                        text: 'Reset Evals'
+                        on_press: root._on_reset_evals()
             BoxLayout:
                 size_hint_x: 1
                 id: eval_box

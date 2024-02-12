@@ -11,6 +11,7 @@ IMAGE_FILE_FORMATS = ["jpg", "jpeg", "png", "webp"]
 
 type SiblingNodes = list[ImageStorageNode]
 type NodesPathMap = dict[str, SiblingNodes]
+type NodePics = list[EvaluatedPic]
 
 
 class EvaluatedPic:
@@ -95,6 +96,10 @@ class EvaluatedPic:
     @property
     def evals(self) -> Evaluations:
         return self.__evals.copy()
+    
+    @evals.setter
+    def evals(self, new_evals: Evaluations | None = None) -> None:
+        self.__evals = new_evals if new_evals else {}
 
 
 class ImageStorageNode:
@@ -134,9 +139,9 @@ class ImageStorageNode:
             self.bucket = bucket
 
         if evaluated_pics is None:
-            self.images: SiblingNodes = []
+            self.images: NodePics = []
         else:
-            self.images: SiblingNodes = [
+            self.images: NodePics = [
                 EvaluatedPic(
                     storage_path=pic.get(DataBankSchema.storage_path),
                     categories=pic.get(DataBankSchema.categories),
@@ -170,9 +175,20 @@ class ImageStorageNode:
         self.images.append(image)
         return True
 
-    def pop_image(self) -> EvaluatedPic:
+    def pop_image(self, index: int = -1) -> EvaluatedPic:
         """Pop image from the node."""
-        return self.images.pop()
+        return self.images.pop(index)
+    
+    def index_image(self, pic: EvaluatedPic) -> int | None:
+        """Looks for an image in NodePics images list.
+
+        Returns:
+            int: index if image is present.
+            None: if image was not found in NodePics images list.
+        """
+        if pic in self.images:
+            return self.images.index(pic)
+        return None
 
 
 class ImageNodesHolder:
@@ -192,7 +208,7 @@ class ImageNodesHolder:
         self.__image_nodes = image_nodes
 
     @property
-    def image_nodes(self):
+    def image_nodes(self) -> NodesPathMap:
         """Image nodes property.
 
         Returns:

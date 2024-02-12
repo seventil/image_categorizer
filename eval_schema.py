@@ -62,3 +62,9 @@ class EvaluationSchema:
             current_mark = current_evals.get(eval_category)
             if current_mark is not None:
                 eval_checkboxes[current_mark].active = True
+
+    def reset_current_evals(self) -> None:
+            for eval_category in self.__total_evals:
+                eval_checkboxes = self.get_checks(eval_category)
+                for checkbox in eval_checkboxes.values():
+                    checkbox.active = False

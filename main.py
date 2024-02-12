@@ -94,6 +94,10 @@ class MainScreen(Screen):
             )
         self.image_handler.current.evaluate(checkbox.group, checkbox.label)
 
+    def _on_reset_evals(self) -> None:
+        self.eval_schema.reset_current_evals()
+        self.image_handler.current.evals = {}
+
 
 class MenuScreen(Screen):
     """Screen that allows to scan folder or databank for images to evaluate."""
