@@ -102,6 +102,10 @@ class EvaluatedPic:
     def evals(self, new_evals: Evaluations | None = None) -> None:
         self.__evals = new_evals if new_evals else {}
 
+    @property
+    def sorted_ranks(self) -> SortedRanks:
+        return (self.__evals[rank] for rank in self.categories)
+
 
 class ImageStorageNode:
     """A node to store evaluated image objects differentiated by categories.
@@ -203,7 +207,7 @@ class ImageNodesHolder:
         """Initialize node container.
 
         Args:
-            image_nodes (Dict[str, ImageStorageNode]): mapping of image nodes
+            image_nodes (Dict[str, NodesPathMap]): mapping of image nodes
                 with their categories in hierarchy notation.
         """
         self.__image_nodes = image_nodes
@@ -222,9 +226,13 @@ class ImageNodesHolder:
         """Fits the image object based on its attributes.
 
         Takes into account primary category, all present subcategories and their
-        respective evaluations. If several nodes match the criteria, finds the
-        one that has empty space for the image. If a fitting node does not exist,
-        creates it.
+        respective evaluations. Appropriate nodes are found by category/subcategory
+        path.
+        
+        If several nodes match the criteria (same categories, but different evals
+        and buckets), finds the one that has empty space for the image.
+
+        If a fitting node does not exist, creates it.
 
         Asserts categories of the EvaluatedPic are sorted as per the schema.
         Asserts that the image is not present in the nodes, otherwise creates
@@ -235,14 +243,31 @@ class ImageNodesHolder:
         """
         relative_path = os.path.join(image.categories)
         sibling_nodes = self.__image_nodes.get(relative_path)
+        if not sibling_nodes:
+            sibling_nodes = []
+            self.__image_nodes[relative_path] = sibling_nodes
+
         fitting_mark_nodes = [
             node
             for node in sibling_nodes
-            if node.ranks == (image.evals[rank] for rank in image.categories)
+            if node.ranks == image.sorted_ranks
         ]
         for node in fitting_mark_nodes:
             if node.add_image(image):
                 return
+        else:
+            buckets = [node.bucket for node in fitting_mark_nodes]
+            if len(buckets) > 0:
+                max_bucket = list(max(buckets))
+                ordinal = ord(max_bucket[-1]) + 1
+                max_bucket[-1] = chr(ordinal)
+                bucket = "".join(max_bucket)
+            else:
+                bucket = "A"
 
-
-
+            new_node = ImageStorageNode(
+                ranks=image.sorted_ranks, 
+                bucket=bucket,
+            )
+            new_node.add_image(image)
+            sibling_nodes.append(new_node)
