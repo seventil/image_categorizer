@@ -21,9 +21,6 @@ class JSONDataBank:
 
         The root must contain folder structure fitting categories and json files
         with lists of evaluated images data.
-
-        Args:
-            path (str): path to the root folder. Defaults to DEFAULT_DB_PATH.
         """
         image_nodes: NodesPathMap = {}
         for folder, _, files in os.walk(path):
@@ -57,10 +54,6 @@ class JSONDataBank:
 
         The root contains folder structure fitting categories and json files
         with lists of evaluated images data.
-
-        Args:
-            nodes_holder (ImageNodesHolder): nodes structure to save.
-            root_path (str): path to the root folder. Defaults to DEFAULT_DB_PATH.
         """
         for path, image_nodes in nodes_holder.image_nodes.items():
             for node in image_nodes:

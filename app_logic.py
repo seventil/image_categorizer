@@ -9,14 +9,7 @@ DEFAULT_EVAL_RANGE = 2
 def filter_files(
     files: list[str], filters: str | list[str]
 ) -> list[str]:
-    """Filters files with wanted formats from the list of files.
-
-    Args:
-        files (List[str]): files with different formats.
-        filters (str | List[str]): names of formats to be in returned list.
-    Returns:
-        List[str] of files with filtered formats.
-    """
+    """Filters files with wanted formats from the list of files."""
     if isinstance(filters, str):
         filters = [filters]
     filtered_files = []
@@ -28,6 +21,7 @@ def filter_files(
 
 
 def scan_images_input(path: str = SCAN_DEFAULT_PATH) -> list:
+    """Scans input path and creates a list of images present within input path."""
     images = []
     content = {}
     for root, _, files in os.walk(path):
@@ -40,10 +34,12 @@ def scan_images_input(path: str = SCAN_DEFAULT_PATH) -> list:
 
 
 class OnScreenImageHandler:
+    """Manager class that keeps information on the current image (where the cursor
+    is at) and also moves the cursor."""
     def __init__(self, user_input_path: str):
         self.__images: list[str | EvaluatedPic] = scan_images_input(user_input_path)
         self.cursor = ListCursor(len(self.__images))
-        self.__current = None
+        self.current = None
         self.__assign_current()
 
     def next(self) -> None:
@@ -53,10 +49,6 @@ class OnScreenImageHandler:
     def previous(self) -> None:
         self.cursor << 1
         self.__assign_current()
-
-    @property
-    def current(self) -> EvaluatedPic | None:
-        return self.__current
     
     @property
     def empty(self) -> bool:
@@ -67,13 +59,14 @@ class OnScreenImageHandler:
             return
         new_image = self.__images[int(self.cursor)]
         if not isinstance(new_image, EvaluatedPic):
-            self.__current = EvaluatedPic(new_image)
-            self.__images[int(self.cursor)] = self.__current
+            self.current = EvaluatedPic(new_image)
+            self.__images[int(self.cursor)] = self.current
         else:
-            self.__current = new_image
+            self.current = new_image
 
 
 class ListCursor:
+    """Cursor that allows to move within selected length."""
     def __init__(self, limit: int):
         self.limit = limit
         self.counter: int = 0

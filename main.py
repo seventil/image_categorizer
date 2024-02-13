@@ -13,17 +13,11 @@ APP_UI_TEMPLATE_FILE = "main_app.kv"
 
 
 class MainScreen(Screen):
-    """ Main App screen that shows an Image and checkboxes for its evlauation.
-
-    Atributes:
-        image_handler (OnScreenImageHandler | None): hanlder for image navigation
-            in scanned folder. 
-        eval_schema (EvaluationSchema): contains evaluation categories.
-    """
+    """ Main App screen that shows an Image and checkboxes for its evlauation."""
     screen_name = "main_screen"
 
     def __init__(self, **kwargs):
-        """Initialize screen object with evaluation schema and corresponding checkboxes."""
+        """Initialize a screen object with evaluation schema and corresponding checkboxes."""
         super(MainScreen, self).__init__(name=MainScreen.screen_name)
 
         self.image_handler: OnScreenImageHandler | None = None
@@ -32,24 +26,28 @@ class MainScreen(Screen):
         self.__set_up_evaluation_checkboxes()
 
     def on_enter(self):
-        """Each time on screen enter render an image."""
+        """When entering this screen render an image."""
         self.__load_new_image()
 
     def on_leave(self):
-        """Each time on leaving the screen save the evaluations."""
+        """When leaving this screen save the evaluations."""
         pass
 
     def set_image_handler(self, handler: OnScreenImageHandler) -> None:
-        """Set the image handler from another screen."""
+        """Set the image handler for this screen."""
         self.image_handler = handler
 
     def _load_previous_image(self):
-        """Save current evaluated image to appropriate Node and physically and load prev image."""
+        """Save current evaluated image to appropriate Node, 
+        save it physically and load prev image.
+        """
         self.image_handler.previous()
         self.__load_new_image()
 
     def _load_next_image(self):
-        """Save current evaluated image to appropriate Node and physically. and load next image."""
+        """Save current evaluated image to appropriate Node, 
+        save it physically and load next image.
+        """
         self.image_handler.next()
         self.__load_new_image()
 
@@ -95,6 +93,7 @@ class MainScreen(Screen):
         self.image_handler.current.evaluate(checkbox.group, checkbox.label)
 
     def _on_reset_evals(self) -> None:
+        """Resets UI checkboxes and evaluation in the image."""
         self.eval_schema.reset_current_evals()
         self.image_handler.current.evals = {}
 
