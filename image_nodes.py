@@ -1,7 +1,6 @@
 
 import os
 
-from databank_schema import DataBankSchema
 from eval_schema import (Categories, Eval_Category, Evaluations, Mark,
                          PrioritizedCategories)
 
@@ -111,7 +110,7 @@ class ImageStorageNode:
         name: NodeName | None = None,
         ranks: SortedMarks | None = None,
         bucket: NodeBucket | None = None,
-        evaluated_pics: list[dict] | None = None,
+        evaluated_pics: NodePics | None = None,
     ) -> None:
         """Instantiate the node with possible rank and json data for pics."""
         if name is not None:
@@ -129,14 +128,7 @@ class ImageStorageNode:
         if evaluated_pics is None:
             self.images: NodePics = []
         else:
-            self.images: NodePics = [
-                EvaluatedPic(
-                    storage_path=pic.get(DataBankSchema.storage_path),
-                    categories=pic.get(DataBankSchema.categories),
-                    evals=pic.get(DataBankSchema.evals),
-                )
-                for pic in evaluated_pics
-            ]
+            self.images: NodePics = evaluated_pics
 
     @property
     def name(self) -> NodeName:

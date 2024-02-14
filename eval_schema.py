@@ -22,7 +22,8 @@ type Mark = int
 """Relative evaluation mark for the image in the specified category."""
 
 type Eval_Category = str
-"""Name of the category from the schema file."""
+"""Name of the category from the schema file. Includes only "Category" from schema
+and not any regular eval from schema."""
 
 type Categories = list[Eval_Category]
 """Categories names (from schema) that the image fits or might fit."""

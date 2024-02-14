@@ -3,8 +3,8 @@ import os
 
 from app_logic import filter_files
 from databank_schema import DataBankSchema
-from image_nodes import (ImageNodesHolder, ImageStorageNode, NodesPathMap,
-                         SiblingNodes)
+from image_nodes import (EvaluatedPic, ImageNodesHolder, ImageStorageNode,
+                         NodePics, NodesPathMap, SiblingNodes)
 
 STORAGE_FORMAT = "json"
 DEFAULT_DB_PATH = "databank"
@@ -36,10 +36,19 @@ class JSONDataBank:
                     eval_pics_json_data = json.load(fstream)
                 node_name = os.path.basename(full_path).split(".")[0]
 
+                images: NodePics = [
+                    EvaluatedPic(
+                        storage_path=pic.get(DataBankSchema.storage_path),
+                        categories=pic.get(DataBankSchema.categories),
+                        evals=pic.get(DataBankSchema.evals),
+                    )
+                    for pic in eval_pics_json_data
+                ]
+
                 nodes.append(
                     ImageStorageNode(
                         name=node_name,
-                        evaluated_pics=eval_pics_json_data,
+                        evaluated_pics=images,
                     )
                 )
             image_nodes[rel_path] = nodes
