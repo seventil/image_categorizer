@@ -59,6 +59,8 @@ class EvaluationSchema:
         self.total_evals: list[Eval_Category] = [
             cat for cats in json_schema.values() for cat in cats
         ]
+        if len(set(self.total_evals)) < len(self.total_evals):
+            raise ValueError("No duplicates allowed in categories")
         self._eval_category_check_boxes: CategorizedMarkedCheckBox = {
             eval_category: {} for eval_category in self.total_evals
         }

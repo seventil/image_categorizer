@@ -22,9 +22,8 @@ type ImageStoragePath = str
 type SiblingNodes = list[ImageStorageNode]
 """A list of nodes with the same assigned categories."""
 
-type NodesPathMap = dict[CategoryHierarchyPath, SiblingNodes]
-"""Mapping of sibling nodes to hierarchal categories combined into a path 
-sorted as per the schema."""
+type NodesCatsMap = dict[tuple[Eval_Category, ...], SiblingNodes]
+"""Mapping of sibling nodes to hierarchal categories sorted as per the schema."""
 
 type NodeName = str
 """Name of the node, containing info on it's ranks for categories and subcategories 
@@ -188,12 +187,12 @@ class ImageStorageNode:
 class ImageNodesHolder:
     """Parent for image nodes that maps nodes to their respective categories."""
 
-    def __init__(self, image_nodes: NodesPathMap | None = None) -> None:
+    def __init__(self, image_nodes: NodesCatsMap | None = None) -> None:
         """Initialize node container."""
         if image_nodes is not None:
             self.image_nodes = image_nodes
         else:
-            self.image_nodes: NodesPathMap = {}
+            self.image_nodes: NodesCatsMap = {}
 
     def post_pic(self, image: EvaluatedPic) -> None:
         """Fits the image object based on its attributes.
@@ -209,15 +208,16 @@ class ImageNodesHolder:
 
         Asserts categories of the EvaluatedPic are sorted as per the schema.
         """
-        relative_path = (
-            os.path.join(*image.categories)
+        nodes_key = (
+            tuple(image.categories)
             if len(image.categories) > 0
-            else DEFAULT_UNCATEGORIZED_OUTPUT
+            else (DEFAULT_UNCATEGORIZED_OUTPUT,)
         )
-        sibling_nodes = self.image_nodes.get(relative_path)
+
+        sibling_nodes = self.image_nodes.get(nodes_key)
         if not sibling_nodes:
             sibling_nodes = []
-            self.image_nodes[relative_path] = sibling_nodes
+            self.image_nodes[nodes_key] = sibling_nodes
 
         fitting_mark_nodes = [
             node for node in sibling_nodes if node.ranks == image.sorted_marks

@@ -81,7 +81,7 @@ class JSONDataBank:
                     }
                     evaluated_images.append(evaluated_img_json)
                 output_name = f"{node.name}.{STORAGE_FORMAT}"
-                output_path = os.path.join(root_path, path)
+                output_path = os.path.join(root_path, *path)
                 os.makedirs(output_path, exist_ok=True)
                 with open(
                     os.path.join(output_path, output_name),
