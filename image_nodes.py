@@ -5,7 +5,7 @@ from eval_schema import (Categories, Eval_Category, Evaluations, Mark,
                          PrioritizedCategories)
 
 MAX_ITEMS_PER_NODE = 1000
-
+DEFAULT_UNCATEGORIZED_OUTPUT = "uncategorized"
 IMAGE_FILE_FORMATS = ["jpg", "jpeg", "png", "webp"]
 
 type CategoryHierarchyPath = str
@@ -18,7 +18,8 @@ type SiblingNodes = list[ImageStorageNode]
 """A list of nodes with the same assigned categories."""
 
 type NodesPathMap = dict[CategoryHierarchyPath, SiblingNodes]
-"""Mapping of sibling nodes to hierarchal categories sorted as per the schema."""
+"""Mapping of sibling nodes to hierarchal categories combined into a path 
+sorted as per the schema."""
 
 type NodeName = str
 """Name of the node, containing info on it's ranks for categories and subcategories 
@@ -99,7 +100,7 @@ class EvaluatedPic:
     @property
     def sorted_marks(self) -> SortedMarks:
         """Evaluation marks for the categories assigned for the image."""
-        return (self.__evals[mark] for mark in self.categories)
+        return tuple(self.__evals[mark] for mark in self.categories)
 
 
 class ImageStorageNode:
@@ -114,8 +115,10 @@ class ImageStorageNode:
     ) -> None:
         """Instantiate the node with possible rank and json data for pics."""
         if name is not None:
-            self.__name: NodeName = name
+            self.__name = name
             name = name.split("_")
+        else:
+            self.__name = None
         if name is not None and bucket is None:
             self.bucket: NodeBucket = name.pop(-1)
         if name is not None and ranks is None:
@@ -133,17 +136,18 @@ class ImageStorageNode:
     @property
     def name(self) -> NodeName:
         """The name of this node."""
-        if not self.__name:
-            name = [rank for rank in self.ranks]
+        if self.__name is None:
+            name = [str(rank) for rank in self.ranks]
             name.append(self.bucket)
             self.__name = "_".join(name)
         return self.__name
 
     def add_image(self, image: EvaluatedPic) -> bool:
         """Add image object to the node. Returns true if the image was added."""
-        if len(self.images > MAX_ITEMS_PER_NODE):
+        if len(self.images) > MAX_ITEMS_PER_NODE:
             return False
-        image.node_ref.pop_image(image)
+        if image.node_ref is not None:
+            image.node_ref.pop_image(image)
         self.images.append(image)
         image.node_ref = self
         return True
@@ -162,9 +166,12 @@ class ImageStorageNode:
 
 class ImageNodesHolder:
     """Parent for image nodes that maps nodes to their respective categories."""
-    def __init__(self, image_nodes: NodesPathMap) -> None:
+    def __init__(self, image_nodes: NodesPathMap | None = None) -> None:
         """Initialize node container."""
-        self.image_nodes = image_nodes
+        if image_nodes is not None:
+            self.image_nodes = image_nodes
+        else:
+            self.image_nodes: NodesPathMap = {}
 
     def post_pic(self, image: EvaluatedPic) -> None:
         """Fits the image object based on its attributes.
@@ -180,7 +187,8 @@ class ImageNodesHolder:
 
         Asserts categories of the EvaluatedPic are sorted as per the schema.
         """
-        relative_path = os.path.join(image.categories)
+        relative_path = os.path.join(*image.categories) if len(image.categories) > 0 \
+            else DEFAULT_UNCATEGORIZED_OUTPUT
         sibling_nodes = self.image_nodes.get(relative_path)
         if not sibling_nodes:
             sibling_nodes = []

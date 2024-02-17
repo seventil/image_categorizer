@@ -1,45 +1,24 @@
 import os
 
-from image_nodes import IMAGE_FILE_FORMATS, EvaluatedPic
+from databank import JSONDataBank
+from file_utils import scan_images_input
+from image_nodes import EvaluatedPic, ImageNodesHolder
 
-SCAN_DEFAULT_PATH = "inputs"
 DEFAULT_EVAL_RANGE = 2
-
-
-def filter_files(
-    files: list[str], filters: str | list[str]
-) -> list[str]:
-    """Filters files with wanted formats from the list of files."""
-    if isinstance(filters, str):
-        filters = [filters]
-    filtered_files = []
-    for file in files:
-        if file.split(".")[-1].lower() in filters:
-            filtered_files.append(file)
-
-    return filtered_files
-
-
-def scan_images_input(path: str = SCAN_DEFAULT_PATH) -> list:
-    """Scans input path and creates a list of images present within input path."""
-    images = []
-    content = {}
-    for root, _, files in os.walk(path):
-        content[root] = filter_files(files, IMAGE_FILE_FORMATS)
-
-    for directory, files in content.items():
-        for file in files:
-            images.append(os.path.join(directory, file))
-    return images
 
 
 class OnScreenImageHandler:
     """Manager class that keeps information on the current image (where the cursor
     is at) and also moves the cursor."""
-    def __init__(self, user_input_path: str):
+    def __init__(self, user_input_path: str, nodes_holder: ImageNodesHolder | None = None):
         self.__images: list[str | EvaluatedPic] = scan_images_input(user_input_path)
         self.cursor = ListCursor(len(self.__images))
         self.current = None
+        if nodes_holder is not None:
+            self._nodes_holder = nodes_holder
+        else:
+            self._nodes_holder = ImageNodesHolder()
+
         self.__assign_current()
 
     def next(self) -> None:
@@ -49,6 +28,12 @@ class OnScreenImageHandler:
     def previous(self) -> None:
         self.cursor << 1
         self.__assign_current()
+
+    def save_current(self) -> None:
+        self._nodes_holder.post_pic(self.current)
+
+    def save_eval_data(self) -> None:
+        JSONDataBank.save(self._nodes_holder)
     
     @property
     def empty(self) -> bool:
@@ -81,8 +66,3 @@ class ListCursor:
 
     def __int__(self):
         return self.counter
-
-
-
-
-

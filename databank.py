@@ -1,8 +1,8 @@
 import json
 import os
 
-from app_logic import filter_files
 from databank_schema import DataBankSchema
+from file_utils import filter_files
 from image_nodes import (EvaluatedPic, ImageNodesHolder, ImageStorageNode,
                          NodePics, NodesPathMap, SiblingNodes)
 

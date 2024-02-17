@@ -21,7 +21,8 @@ class MainScreen(Screen):
         super(MainScreen, self).__init__(name=MainScreen.screen_name)
 
         self.image_handler: OnScreenImageHandler | None = None
-        self.eval_schema: EvaluationSchema = App.get_running_app().evaluation_schema
+        running_app: MainApp = App.get_running_app()
+        self.eval_schema: EvaluationSchema = running_app.evaluation_schema
 
         self.__set_up_evaluation_checkboxes()
 
@@ -31,7 +32,8 @@ class MainScreen(Screen):
 
     def on_leave(self):
         """When leaving this screen save the evaluations."""
-        pass
+        self.image_handler.save_current()
+        self.image_handler.save_eval_data()
 
     def set_image_handler(self, handler: OnScreenImageHandler) -> None:
         """Set the image handler for this screen."""
@@ -41,6 +43,7 @@ class MainScreen(Screen):
         """Save current evaluated image to appropriate Node, 
         save it physically and load prev image.
         """
+        self.image_handler.save_current()
         self.image_handler.previous()
         self.__load_new_image()
 
@@ -48,6 +51,7 @@ class MainScreen(Screen):
         """Save current evaluated image to appropriate Node, 
         save it physically and load next image.
         """
+        self.image_handler.save_current()
         self.image_handler.next()
         self.__load_new_image()
 
@@ -96,6 +100,7 @@ class MainScreen(Screen):
         """Resets UI checkboxes and evaluation in the image."""
         self.eval_schema.reset_current_evals()
         self.image_handler.current.evals = {}
+        self.image_handler.save_current()
 
 
 class MenuScreen(Screen):
@@ -132,6 +137,9 @@ class MainApp(App):
         """Initiate the kivy app object and read eval schema."""
         super().__init__(*args, **kwargs)
         self.evaluation_schema = EvaluationSchema()
+
+    def on_stop(self) -> None:
+        self.root.current_screen.on_leave()
 
 
 if __name__ == "__main__":
