@@ -2,12 +2,18 @@ import json
 import os
 
 from databank_schema import DataBankSchema
-from file_utils import filter_files
-from image_nodes import (EvaluatedPic, ImageNodesHolder, ImageStorageNode,
-                         NodePics, NodesPathMap, SiblingNodes)
+from file_utils import DEFAULT_OUTPUT, filter_files
+from image_nodes import (
+    EvaluatedPic,
+    ImageNodesHolder,
+    ImageStorageNode,
+    NodePics,
+    NodesPathMap,
+    SiblingNodes,
+)
 
 STORAGE_FORMAT = "json"
-DEFAULT_DB_PATH = "databank"
+DEFAULT_DB_PATH = os.path.join(DEFAULT_OUTPUT, "databank")
 DEFAULT_ENCODING = "utf-8"
 JSON_INDENT = 4
 

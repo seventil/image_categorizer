@@ -23,6 +23,7 @@ prerequisites:
 python3.12 -m venv ./venv/
 source venv/bin/activate
 pip3 install kivy
+pip3 install pillow
 ```
 
 to run:

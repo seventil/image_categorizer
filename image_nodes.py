@@ -1,12 +1,17 @@
-
 import os
 
-from eval_schema import (Categories, Eval_Category, Evaluations, Mark,
-                         PrioritizedCategories)
+from eval_schema import (
+    Categories,
+    Eval_Category,
+    Evaluations,
+    Mark,
+    PrioritizedCategories,
+)
+from file_utils import transfer_image
 
 MAX_ITEMS_PER_NODE = 1000
 DEFAULT_UNCATEGORIZED_OUTPUT = "uncategorized"
-IMAGE_FILE_FORMATS = ["jpg", "jpeg", "png", "webp"]
+
 
 type CategoryHierarchyPath = str
 
@@ -42,6 +47,7 @@ or, if not, to preserve HD texture detail."""
 
 class EvaluatedPic:
     """Encapsulates evaluations for an image with info on where it is stored."""
+
     def __init__(
         self,
         storage_path: ImageStoragePath,
@@ -63,7 +69,9 @@ class EvaluatedPic:
 
         self.node_ref: ImageStorageNode = None
 
-    def add_category(self, category: Eval_Category, category_priority: PrioritizedCategories) -> None:
+    def add_category(
+        self, category: Eval_Category, category_priority: PrioritizedCategories
+    ) -> None:
         """Add a category that the image fits into."""
         if category not in self.categories:
             self.categories.append(category)
@@ -85,14 +93,14 @@ class EvaluatedPic:
 
     @property
     def evals(self) -> Evaluations:
-        """Get a copy of numerical evaluations with corresponding evaluation 
+        """Get a copy of numerical evaluations with corresponding evaluation
         category names for the image.
         """
         return self.__evals.copy()
-    
+
     @evals.setter
     def evals(self, new_evals: Evaluations | None = None) -> None:
-        """Set new or reset numerical evaluations with corresponding evaluation 
+        """Set new or reset numerical evaluations with corresponding evaluation
         category names for the image.
         """
         self.__evals = new_evals if new_evals else {}
@@ -101,6 +109,17 @@ class EvaluatedPic:
     def sorted_marks(self) -> SortedMarks:
         """Evaluation marks for the categories assigned for the image."""
         return tuple(self.__evals[mark] for mark in self.categories)
+
+    def change_storage_path(self, node_name: str) -> None:
+        relative_path = (
+            os.path.join(*self.categories)
+            if len(self.categories) > 0
+            else DEFAULT_UNCATEGORIZED_OUTPUT
+        )
+        new_path = os.path.join(relative_path, node_name)
+        self.storage_path = transfer_image(
+            file=self.storage_path, new_path=new_path, resize=self.resize
+        )
 
 
 class ImageStorageNode:
@@ -150,13 +169,15 @@ class ImageStorageNode:
             image.node_ref.pop_image(image)
         self.images.append(image)
         image.node_ref = self
+        image.change_storage_path(node_name=self.name)
+
         return True
 
     def pop_image(self, pic: EvaluatedPic) -> None:
         """Pop image from the node."""
         index = self.__index_image(pic)
         self.images.pop(index)
-    
+
     def __index_image(self, pic: EvaluatedPic) -> int | None:
         """Looks for an image in NodePics images list."""
         if pic in self.images:
@@ -166,6 +187,7 @@ class ImageStorageNode:
 
 class ImageNodesHolder:
     """Parent for image nodes that maps nodes to their respective categories."""
+
     def __init__(self, image_nodes: NodesPathMap | None = None) -> None:
         """Initialize node container."""
         if image_nodes is not None:
@@ -179,7 +201,7 @@ class ImageNodesHolder:
         Takes into account primary category, all present subcategories and their
         respective evaluations. Appropriate nodes are found by category/subcategory
         path.
-        
+
         If several nodes match the criteria (same categories, but different evals
         and buckets), finds the one that has empty space for the image.
 
@@ -187,17 +209,18 @@ class ImageNodesHolder:
 
         Asserts categories of the EvaluatedPic are sorted as per the schema.
         """
-        relative_path = os.path.join(*image.categories) if len(image.categories) > 0 \
+        relative_path = (
+            os.path.join(*image.categories)
+            if len(image.categories) > 0
             else DEFAULT_UNCATEGORIZED_OUTPUT
+        )
         sibling_nodes = self.image_nodes.get(relative_path)
         if not sibling_nodes:
             sibling_nodes = []
             self.image_nodes[relative_path] = sibling_nodes
 
         fitting_mark_nodes = [
-            node
-            for node in sibling_nodes
-            if node.ranks == image.sorted_marks
+            node for node in sibling_nodes if node.ranks == image.sorted_marks
         ]
 
         for node in fitting_mark_nodes:
@@ -214,7 +237,7 @@ class ImageNodesHolder:
                 bucket = "A"
 
             new_node = ImageStorageNode(
-                ranks=image.sorted_marks, 
+                ranks=image.sorted_marks,
                 bucket=bucket,
             )
             new_node.add_image(image)

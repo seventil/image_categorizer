@@ -12,6 +12,7 @@ class LabeledCheckBox(CheckBox):
     """Checkbox ui element with a label (mark).
     Can be used to display with a text label.
     """
+
     def __init__(self, **kwargs):
         super(LabeledCheckBox, self).__init__(**kwargs)
 
@@ -46,6 +47,7 @@ class EvaluationSchema:
     """Wrapper class for user-defined evaluation schema that also holds info
     on UI elements bound to the evluation schema components.
     """
+
     def __init__(self, path: str = DEFAULT_SCHEMA_PATH):
         """Initialize the object based on schema json file."""
         with open(path, "r", encoding="utf-8") as fstream:
@@ -70,7 +72,9 @@ class EvaluationSchema:
         """Get MarkedCheckBox mapping for specified evaluation category name."""
         return self._eval_category_check_boxes.get(eval_category, {})
 
-    def assign_checks(self, eval_category: Eval_Category, mark: Mark, check_box: LabeledCheckBox) -> None:
+    def assign_checks(
+        self, eval_category: Eval_Category, mark: Mark, check_box: LabeledCheckBox
+    ) -> None:
         """Create a link between evaluation category name, numerical evaluation mark and
         their corresponding checkbox item."""
         self._eval_category_check_boxes[eval_category][mark] = check_box

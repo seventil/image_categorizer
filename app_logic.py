@@ -1,5 +1,3 @@
-import os
-
 from databank import JSONDataBank
 from file_utils import scan_images_input
 from image_nodes import EvaluatedPic, ImageNodesHolder
@@ -10,7 +8,10 @@ DEFAULT_EVAL_RANGE = 2
 class OnScreenImageHandler:
     """Manager class that keeps information on the current image (where the cursor
     is at) and also moves the cursor."""
-    def __init__(self, user_input_path: str, nodes_holder: ImageNodesHolder | None = None):
+
+    def __init__(
+        self, user_input_path: str, nodes_holder: ImageNodesHolder | None = None
+    ):
         self.__images: list[str | EvaluatedPic] = scan_images_input(user_input_path)
         self.cursor = ListCursor(len(self.__images))
         self.current = None
@@ -34,7 +35,7 @@ class OnScreenImageHandler:
 
     def save_eval_data(self) -> None:
         JSONDataBank.save(self._nodes_holder)
-    
+
     @property
     def empty(self) -> bool:
         return len(self.__images) == 0
@@ -52,6 +53,7 @@ class OnScreenImageHandler:
 
 class ListCursor:
     """Cursor that allows to move within selected length."""
+
     def __init__(self, limit: int):
         self.limit = limit
         self.counter: int = 0

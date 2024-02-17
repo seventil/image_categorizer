@@ -13,7 +13,8 @@ APP_UI_TEMPLATE_FILE = "main_app.kv"
 
 
 class MainScreen(Screen):
-    """ Main App screen that shows an Image and checkboxes for its evlauation."""
+    """Main App screen that shows an Image and checkboxes for its evlauation."""
+
     screen_name = "main_screen"
 
     def __init__(self, **kwargs):
@@ -40,7 +41,7 @@ class MainScreen(Screen):
         self.image_handler = handler
 
     def _load_previous_image(self):
-        """Save current evaluated image to appropriate Node, 
+        """Save current evaluated image to appropriate Node,
         save it physically and load prev image.
         """
         self.image_handler.save_current()
@@ -48,7 +49,7 @@ class MainScreen(Screen):
         self.__load_new_image()
 
     def _load_next_image(self):
-        """Save current evaluated image to appropriate Node, 
+        """Save current evaluated image to appropriate Node,
         save it physically and load next image.
         """
         self.image_handler.save_current()
@@ -63,7 +64,7 @@ class MainScreen(Screen):
 
     def __set_up_evaluation_checkboxes(self) -> None:
         """Dynamically add evaluation checkboxes using eval_schema.
-        
+
         When creating checkboxes in a category should check up on databank.
         """
         eval_box: BoxLayout = self.ids.eval_box
@@ -115,13 +116,13 @@ class MenuScreen(Screen):
         """Load a list of images in a user-specified directory."""
         user_input_path = self.ids.inputs_text.text or self.ids.inputs_text.hint_text
         image_handler = OnScreenImageHandler(user_input_path)
-        
+
         if image_handler.empty:
             popup = Popup(
-                title='Folder scan warning', 
-                content=Label(text='The input path does not contain images'),
+                title="Folder scan warning",
+                content=Label(text="The input path does not contain images"),
                 auto_dismiss=True,
-                size_hint=(0.4, 0.4)
+                size_hint=(0.4, 0.4),
             )
             popup.open()
             return

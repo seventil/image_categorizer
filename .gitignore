@@ -3,5 +3,6 @@ databank*
 inputs*
 outputs
 __pycache__
+.venv
 venv
 .vscode
