@@ -1,5 +1,6 @@
 import os
 
+from kivy.logger import Logger
 from PIL import Image
 
 IMAGE_FILE_FORMATS = ["jpg", "jpeg", "png", "webp"]
@@ -21,7 +22,7 @@ def filter_files(files: list[str], filters: str | list[str]) -> list[str]:
     return filtered_files
 
 
-def scan_images_input(path: str = SCAN_DEFAULT_PATH) -> list:
+def scan_images_input(path: str = SCAN_DEFAULT_PATH) -> list[str]:
     """Scans input path and creates a list of images present within input path."""
     images = []
     content = {}
@@ -46,6 +47,10 @@ def transfer_image(file: str, new_path: str, resize: bool):
     new_file_path = os.path.join(DEFAULT_OUTPUT, new_path, new_file_name)
     os.makedirs(DEFAULT_OUTPUT, exist_ok=True)
     os.makedirs(os.path.join(DEFAULT_OUTPUT, new_path), exist_ok=True)
+
+    if not resize and new_file_path == file:
+        return file
+
     with Image.open(file).convert("RGB") as img:
         height = img.size[0]
         width = img.size[1]
@@ -57,5 +62,7 @@ def transfer_image(file: str, new_path: str, resize: bool):
             img = img.resize((hsize, wsize))
 
         img.save(new_file_path, DEFAULT_FILE_FORMAT)
+
+    Logger.debug(f"{new_file_name} was moved to {new_path}")
     os.remove(file)
     return new_file_path

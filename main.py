@@ -6,7 +6,9 @@ from kivy.uix.popup import Popup
 from kivy.uix.screenmanager import Screen
 
 from app_logic import DEFAULT_EVAL_RANGE, OnScreenImageHandler
+from databank import JSONDataBank
 from eval_schema import EvaluationSchema, LabeledCheckBox
+from file_utils import DEFAULT_OUTPUT
 
 Logger.setLevel("DEBUG")
 APP_UI_TEMPLATE_FILE = "main_app.kv"
@@ -17,21 +19,22 @@ class MainScreen(Screen):
 
     screen_name = "main_screen"
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         """Initialize a screen object with evaluation schema and corresponding checkboxes."""
         super(MainScreen, self).__init__(name=MainScreen.screen_name)
 
         self.image_handler: OnScreenImageHandler | None = None
-        running_app: MainApp = App.get_running_app()
+        running_app: MainApp = App.get_running_app()  # type: ignore
         self.eval_schema: EvaluationSchema = running_app.evaluation_schema
 
         self.__set_up_evaluation_checkboxes()
 
-    def on_enter(self):
+    def on_enter(self, *args) -> None:
         """When entering this screen render an image."""
+        Logger.info("Entering main screen")
         self.__load_new_image()
 
-    def on_leave(self):
+    def on_leave(self, *args) -> None:
         """When leaving this screen save the evaluations."""
         self.image_handler.save_current()
         self.image_handler.save_eval_data()
@@ -40,7 +43,7 @@ class MainScreen(Screen):
         """Set the image handler for this screen."""
         self.image_handler = handler
 
-    def _load_previous_image(self):
+    def _load_previous_image(self) -> None:
         """Save current evaluated image to appropriate Node,
         save it physically and load prev image.
         """
@@ -48,7 +51,7 @@ class MainScreen(Screen):
         self.image_handler.previous()
         self.__load_new_image()
 
-    def _load_next_image(self):
+    def _load_next_image(self) -> None:
         """Save current evaluated image to appropriate Node,
         save it physically and load next image.
         """
@@ -56,7 +59,7 @@ class MainScreen(Screen):
         self.image_handler.next()
         self.__load_new_image()
 
-    def __load_new_image(self):
+    def __load_new_image(self) -> None:
         """Reload current image and reload evaluation checkboxes."""
         self.eval_schema.reload_evaluations(self.image_handler.current.evals)
         self.ids.img_name.text = self.image_handler.current.storage_path
@@ -82,7 +85,7 @@ class MainScreen(Screen):
 
                 check = LabeledCheckBox(group=cat, active=False, label=mark)
                 self.eval_schema.assign_checks(cat, mark, check)
-                check.bind(on_release=self._on_checkbox_active)
+                check.bind(on_release=self._on_checkbox_active)  # type: ignore
 
                 category_checks_hbox.add_widget(check_label)
                 category_checks_hbox.add_widget(check)
@@ -101,20 +104,40 @@ class MainScreen(Screen):
         """Resets UI checkboxes and evaluation in the image."""
         self.eval_schema.reset_current_evals()
         self.image_handler.current.evals = {}
+        self.image_handler.current.categories.clear()
         self.image_handler.save_current()
 
 
 class MenuScreen(Screen):
     """Screen that allows to scan folder or databank for images to evaluate."""
 
-    def _load_databank(self):
+    def on_enter(self, *args):
+        Logger.info("Entering menu screen")
+
+    def _load_databank(self) -> None:
         """Load eval image info from databank and go through its images."""
         self.parent.current = MainScreen.screen_name
-        raise NotImplementedError("databank is not ready")
+        nodes_holder = JSONDataBank.read()
+        image_handler = OnScreenImageHandler(DEFAULT_OUTPUT, nodes_holder)
 
-    def _load_inputs(self):
+        if image_handler.empty:
+            popup = Popup(
+                title="Databank warning",
+                content=Label(text="Databank contains no physical images"),
+                auto_dismiss=True,
+                size_hint=(0.4, 0.4),
+            )
+            popup.open()
+            return
+
+        self.parent.get_screen(MainScreen.screen_name).set_image_handler(image_handler)
+        self.parent.current = MainScreen.screen_name
+
+    def _load_inputs(self) -> None:
         """Load a list of images in a user-specified directory."""
-        user_input_path = self.ids.inputs_text.text or self.ids.inputs_text.hint_text
+        user_input_path: str = (
+            self.ids.inputs_text.text or self.ids.inputs_text.hint_text
+        )
         image_handler = OnScreenImageHandler(user_input_path)
 
         if image_handler.empty:
@@ -140,7 +163,7 @@ class MainApp(App):
         self.evaluation_schema = EvaluationSchema()
 
     def on_stop(self) -> None:
-        self.root.current_screen.on_leave()
+        self.root.current_screen.on_leave()  # type: ignore
 
 
 if __name__ == "__main__":

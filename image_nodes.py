@@ -57,16 +57,16 @@ class EvaluatedPic:
         """Initialize the object with all attributes."""
         self.storage_path = storage_path
         if categories is None:
-            self.categories = []
+            self.categories: Categories = []
         else:
             self.categories = categories
         if evals is None:
-            self.__evals = {}
+            self.__evals: Evaluations = {}
         else:
             self.__evals = evals
         self.resize = resize
 
-        self.node_ref: ImageStorageNode = None
+        self.node_ref: ImageStorageNode | None = None
 
     def add_category(
         self, category: Eval_Category, category_priority: PrioritizedCategories
@@ -116,9 +116,13 @@ class EvaluatedPic:
             else DEFAULT_UNCATEGORIZED_OUTPUT
         )
         new_path = os.path.join(relative_path, node_name)
+
         self.storage_path = transfer_image(
             file=self.storage_path, new_path=new_path, resize=self.resize
         )
+
+        if self.resize:
+            self.resize = False
 
 
 class ImageStorageNode:
@@ -134,13 +138,14 @@ class ImageStorageNode:
         """Instantiate the node with possible rank and json data for pics."""
         if name is not None:
             self.__name = name
-            name = name.split("_")
+            components = name.split("_")
+            if bucket is None:
+                self.bucket: NodeBucket = components.pop(-1)
+            if ranks is None:
+                self.ranks: SortedMarks = tuple(map(int, components))
         else:
             self.__name = None
-        if name is not None and bucket is None:
-            self.bucket: NodeBucket = name.pop(-1)
-        if name is not None and ranks is None:
-            self.ranks: SortedMarks = tuple(map(int, name))
+
         if ranks is not None:
             self.ranks = ranks
         if bucket is not None:
@@ -150,6 +155,8 @@ class ImageStorageNode:
             self.images: NodePics = []
         else:
             self.images: NodePics = evaluated_pics
+            for image in self.images:
+                image.node_ref = self
 
     @property
     def name(self) -> NodeName:
@@ -162,6 +169,8 @@ class ImageStorageNode:
 
     def add_image(self, image: EvaluatedPic) -> bool:
         """Add image object to the node. Returns true if the image was added."""
+        if image.node_ref == self:
+            return True
         if len(self.images) > MAX_ITEMS_PER_NODE:
             return False
         if image.node_ref is not None:
@@ -175,7 +184,8 @@ class ImageStorageNode:
     def pop_image(self, pic: EvaluatedPic) -> None:
         """Pop image from the node."""
         index = self.__index_image(pic)
-        self.images.pop(index)
+        if index is not None:
+            self.images.pop(index)
 
     def __index_image(self, pic: EvaluatedPic) -> int | None:
         """Looks for an image in NodePics images list."""
@@ -193,6 +203,16 @@ class ImageNodesHolder:
             self.image_nodes = image_nodes
         else:
             self.image_nodes: NodesCatsMap = {}
+
+    def list_images(self) -> list[EvaluatedPic]:
+        all_nodes: list[ImageStorageNode] = [
+            node for sibling in self.image_nodes.values() for node in sibling
+        ]
+        all_node_images: list[EvaluatedPic] = [
+            image for node in all_nodes for image in node.images
+        ]
+
+        return all_node_images
 
     def post_pic(self, image: EvaluatedPic) -> None:
         """Fits the image object based on its attributes.

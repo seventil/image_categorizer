@@ -8,7 +8,7 @@ from image_nodes import (
     ImageNodesHolder,
     ImageStorageNode,
     NodePics,
-    NodesPathMap,
+    NodesCatsMap,
     SiblingNodes,
 )
 
@@ -28,11 +28,13 @@ class JSONDataBank:
         The root must contain folder structure fitting categories and json files
         with lists of evaluated images data.
         """
-        image_nodes: NodesPathMap = {}
+        image_nodes: NodesCatsMap = {}
         for folder, _, files in os.walk(path):
             if len(files) == 0:
                 continue
             rel_path = os.path.relpath(folder, start=path)
+
+            node_key = tuple(rel_path.split(os.path.sep))
             files = filter_files(files, STORAGE_FORMAT)
 
             nodes: SiblingNodes = []
@@ -47,6 +49,7 @@ class JSONDataBank:
                         storage_path=pic.get(DataBankSchema.storage_path),
                         categories=pic.get(DataBankSchema.categories),
                         evals=pic.get(DataBankSchema.evals),
+                        resize=pic.get(DataBankSchema.resize),
                     )
                     for pic in eval_pics_json_data
                 ]
@@ -57,12 +60,13 @@ class JSONDataBank:
                         evaluated_pics=images,
                     )
                 )
-            image_nodes[rel_path] = nodes
+            image_nodes[node_key] = nodes
         return ImageNodesHolder(image_nodes)
 
     @staticmethod
     def save(
         nodes_holder: ImageNodesHolder,
+        append: bool,
         root_path: str = DEFAULT_DB_PATH,
     ):
         """Save node structure to the databank folder.
@@ -70,6 +74,7 @@ class JSONDataBank:
         The root contains folder structure fitting categories and json files
         with lists of evaluated images data.
         """
+
         for path, image_nodes in nodes_holder.image_nodes.items():
             for node in image_nodes:
                 evaluated_images = []
@@ -78,11 +83,21 @@ class JSONDataBank:
                         DataBankSchema.storage_path: img.storage_path,
                         DataBankSchema.categories: img.categories,
                         DataBankSchema.evals: img.evals,
+                        DataBankSchema.resize: img.resize,
                     }
                     evaluated_images.append(evaluated_img_json)
                 output_name = f"{node.name}.{STORAGE_FORMAT}"
                 output_path = os.path.join(root_path, *path)
                 os.makedirs(output_path, exist_ok=True)
+                if append:
+                    with open(
+                        os.path.join(output_path, output_name),
+                        "r",
+                        encoding=DEFAULT_ENCODING,
+                    ) as fstream:
+                        eval_pics_json_data = json.load(fstream)
+                    evaluated_images = [*evaluated_images, *eval_pics_json_data]
+
                 with open(
                     os.path.join(output_path, output_name),
                     "w",

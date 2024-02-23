@@ -4,3 +4,4 @@ class DataBankSchema:
     storage_path = "Path"
     categories = "Categories"
     evals = "Evals"
+    resize = "Resize"
