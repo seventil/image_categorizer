@@ -6,7 +6,7 @@ from kivy.uix.label import Label
 from kivy.uix.popup import Popup
 from kivy.uix.screenmanager import Screen
 
-from app_logic import DEFAULT_EVAL_RANGE, OnScreenImageHandler
+from app_logic import OnScreenImageHandler
 from databank import JSONDataBank
 from eval_schema import EvaluationSchema, LabeledCheckBox
 from file_utils import DEFAULT_OUTPUT
@@ -90,7 +90,7 @@ class MainScreen(Screen):
             category_checks_hbox = BoxLayout(orientation="horizontal")
             category_vbox.add_widget(category_checks_hbox)
 
-            for mark in range(1, 1 + DEFAULT_EVAL_RANGE):
+            for mark in range(1, 1 + self.eval_schema.eval_range_for_categories[cat]):
                 check_label = Label(text=str(mark))
 
                 check = LabeledCheckBox(group=cat, active=False, label=mark)

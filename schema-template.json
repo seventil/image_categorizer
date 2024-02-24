@@ -1,14 +1,14 @@
 {
-    "Categories": [
-        "cat1",
-        "cat2",
-        "cat3",
-        "cat4"
-    ],
-    "Evals": [
-        "eval1",
-        "eval2",
-        "eval3",
-        "eval4"
-    ]
+    "Categories": {
+        "cat1": 2,
+        "cat2": 2,
+        "cat3": 2,
+        "cat4": 2
+    },
+    "Evals": {
+        "eval1": 2,
+        "eval2": 2,
+        "eval3": 2,
+        "eval4": 2
+    }
 }

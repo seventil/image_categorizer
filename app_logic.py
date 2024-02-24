@@ -12,6 +12,7 @@ class OnScreenImageHandler:
     is at) and also moves the cursor."""
 
     def __init__(self, input_path: str, nodes_holder: ImageNodesHolder | None = None):
+        """Validate images in holder and physically stored images."""
         physical_images: list[str] = scan_images_input(input_path)
         self.cursor = ListCursor(len(physical_images))
 

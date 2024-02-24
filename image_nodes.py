@@ -2,7 +2,7 @@ import os
 
 from eval_schema import (
     Categories,
-    Eval_Category,
+    EvalCategory,
     Evaluations,
     Mark,
     PrioritizedCategories,
@@ -22,7 +22,7 @@ type ImageStoragePath = str
 type SiblingNodes = list[ImageStorageNode]
 """A list of nodes with the same assigned categories."""
 
-type NodesCatsMap = dict[tuple[Eval_Category, ...], SiblingNodes]
+type NodesCatsMap = dict[tuple[EvalCategory, ...], SiblingNodes]
 """Mapping of sibling nodes to hierarchal categories sorted as per the schema."""
 
 type NodeName = str
@@ -69,7 +69,7 @@ class EvaluatedPic:
         self.node_ref: ImageStorageNode | None = None
 
     def add_category(
-        self, category: Eval_Category, category_priority: PrioritizedCategories
+        self, category: EvalCategory, category_priority: PrioritizedCategories
     ) -> None:
         """Add a category that the image fits into."""
         if category not in self.categories:
@@ -86,7 +86,7 @@ class EvaluatedPic:
                 self.categories[image_cat_idx] = cat
                 image_cat_idx += 1
 
-    def evaluate(self, category: Eval_Category, mark: Mark) -> None:
+    def evaluate(self, category: EvalCategory, mark: Mark) -> None:
         """Add or change an evaluation for the image."""
         self.__evals[category] = mark
 

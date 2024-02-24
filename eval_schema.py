@@ -22,23 +22,29 @@ class LabeledCheckBox(CheckBox):
 type Mark = int
 """Relative evaluation mark for the image in the specified category."""
 
-type Eval_Category = str
+type EvalCategory = str
 """Name of the category from the schema file. Includes only "Category" from schema
 and not any regular eval from schema."""
 
-type Categories = list[Eval_Category]
+type EvalRange = int
+"""The Max Mark for possible in an evaluation category."""
+
+type Categories = list[EvalCategory]
 """Categories names (from schema) that the image fits or might fit."""
 
-type Evaluations = dict[Eval_Category, Mark]
+type CategoryEvalRange = dict[EvalCategory, EvalRange]
+"""Mapping of EvalRange for an evaluation category."""
+
+type Evaluations = dict[EvalCategory, Mark]
 """Mapping of evaluation categories to numerical marks."""
 
 type MarkedCheckBox = dict[Mark, LabeledCheckBox]
 """Mapping of a numerical mark to corresponding ui checkbox element."""
 
-type CategorizedMarkedCheckBox = dict[Eval_Category, MarkedCheckBox]
+type CategorizedMarkedCheckBox = dict[EvalCategory, MarkedCheckBox]
 """Mapping of a Evaluation category name with its marks and checkboxes."""
 
-type PrioritizedCategories = tuple[Eval_Category, ...]
+type PrioritizedCategories = tuple[EvalCategory, ...]
 """Sorted categories names from schema, where lowest index indicates higher folder 
 (closer to root) in the databank structure."""
 
@@ -51,13 +57,17 @@ class EvaluationSchema:
     def __init__(self, path: str = DEFAULT_SCHEMA_PATH):
         """Initialize the object based on schema json file."""
         with open(path, "r", encoding="utf-8") as fstream:
-            json_schema: dict[str, list[str]] = json.load(fstream)
+            json_schema: dict[str, dict[str, int]] = json.load(fstream)
 
         self.__pr_categories: PrioritizedCategories = tuple(
             json_schema[DataBankSchema.categories]
         )
-        self.total_evals: list[Eval_Category] = [
-            cat for cats in json_schema.values() for cat in cats
+
+        self.eval_range_for_categories: CategoryEvalRange = {
+            cat: rang for cats in json_schema.values() for cat, rang in cats.items()
+        }
+        self.total_evals: list[EvalCategory] = [
+            cat for cat in self.eval_range_for_categories
         ]
         if len(set(self.total_evals)) < len(self.total_evals):
             raise ValueError("No duplicates allowed in categories")
@@ -70,12 +80,12 @@ class EvaluationSchema:
         """PrioritizedCategories"""
         return self.__pr_categories
 
-    def get_checks(self, eval_category: Eval_Category) -> MarkedCheckBox:
+    def get_checks(self, eval_category: EvalCategory) -> MarkedCheckBox:
         """Get MarkedCheckBox mapping for specified evaluation category name."""
         return self._eval_category_check_boxes.get(eval_category, {})
 
     def assign_checks(
-        self, eval_category: Eval_Category, mark: Mark, check_box: LabeledCheckBox
+        self, eval_category: EvalCategory, mark: Mark, check_box: LabeledCheckBox
     ) -> None:
         """Create a link between evaluation category name, numerical evaluation mark and
         their corresponding checkbox item."""
