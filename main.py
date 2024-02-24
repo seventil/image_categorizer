@@ -1,4 +1,5 @@
 from kivy.app import App
+from kivy.core.window import Window
 from kivy.logger import Logger
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
@@ -22,11 +23,21 @@ class MainScreen(Screen):
     def __init__(self, **kwargs) -> None:
         """Initialize a screen object with evaluation schema and corresponding checkboxes."""
         super(MainScreen, self).__init__(name=MainScreen.screen_name)
+        Window.bind(on_keyboard=self._on_keyboard)
 
         running_app: MainApp = App.get_running_app()  # type: ignore
         self.eval_schema: EvaluationSchema = running_app.evaluation_schema
 
         self.__set_up_evaluation_checkboxes()
+
+    def _on_keyboard(self, *args):
+        LEFT_KEY = 276
+        RIGHT_KEY = 275
+
+        if args[1] == LEFT_KEY:
+            self._load_previous_image()
+        if args[1] == RIGHT_KEY:
+            self._load_next_image()
 
     def on_enter(self, *args) -> None:
         """When entering this screen render an image."""
