@@ -30,11 +30,11 @@ class OnScreenImageHandler:
         self.__assign_current()
 
     def next(self) -> None:
-        self.cursor >> 1
+        self.cursor.shift(1)
         self.__assign_current()
 
     def previous(self) -> None:
-        self.cursor << 1
+        self.cursor.shift(-1)
         self.__assign_current()
 
     def save_current(self) -> None:
@@ -79,12 +79,8 @@ class ListCursor:
         self.limit = limit
         self.counter: int = 0
 
-    def __rshift__(self, amount: int) -> None:
+    def shift(self, amount: int) -> None:
         self.counter += amount
-        self.counter = self.counter % self.limit
-
-    def __lshift__(self, amount: int) -> None:
-        self.counter -= amount
         self.counter = self.counter % self.limit
 
     def __int__(self) -> int:
