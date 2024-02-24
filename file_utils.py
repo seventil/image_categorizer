@@ -35,22 +35,10 @@ def scan_images_input(path: str = SCAN_DEFAULT_PATH) -> list[str]:
     return images
 
 
-def transfer_image(file: str, new_path: str, resize: bool):
+def transfer_image(file: str, new_file_path: str, resize: bool):
     """Transfers the physical location of an image while optionally resizing it.
     Changes storage format to jpeg.
     """
-    new_file_name = os.path.basename(file).split(".")
-    new_file_name.pop()
-    new_file_name.append(f".{DEFAULT_FILE_FORMAT}")
-    new_file_name = "".join(new_file_name)
-
-    new_file_path = os.path.join(DEFAULT_OUTPUT, new_path, new_file_name)
-    os.makedirs(DEFAULT_OUTPUT, exist_ok=True)
-    os.makedirs(os.path.join(DEFAULT_OUTPUT, new_path), exist_ok=True)
-
-    if not resize and new_file_path == file:
-        return file
-
     with Image.open(file).convert("RGB") as img:
         height = img.size[0]
         width = img.size[1]
@@ -63,6 +51,13 @@ def transfer_image(file: str, new_path: str, resize: bool):
 
         img.save(new_file_path, DEFAULT_FILE_FORMAT)
 
-    Logger.debug(f"{new_file_name} was moved to {new_path}")
+    Logger.debug(f"{file} was moved to {new_file_path}")
     os.remove(file)
+    return new_file_path
+
+
+def full_path_from_relative(file: str, new_relative_path: str) -> str:
+    base_name = os.path.basename(file)
+    new_file_name = "".join((os.path.splitext(base_name)[0], f".{DEFAULT_FILE_FORMAT}"))
+    new_file_path = os.path.join(DEFAULT_OUTPUT, new_relative_path, new_file_name)
     return new_file_path

@@ -23,7 +23,6 @@ class MainScreen(Screen):
         """Initialize a screen object with evaluation schema and corresponding checkboxes."""
         super(MainScreen, self).__init__(name=MainScreen.screen_name)
 
-        self.image_handler: OnScreenImageHandler | None = None
         running_app: MainApp = App.get_running_app()  # type: ignore
         self.eval_schema: EvaluationSchema = running_app.evaluation_schema
 

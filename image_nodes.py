@@ -7,7 +7,7 @@ from eval_schema import (
     Mark,
     PrioritizedCategories,
 )
-from file_utils import transfer_image
+from file_utils import DEFAULT_OUTPUT, full_path_from_relative, transfer_image
 
 MAX_ITEMS_PER_NODE = 1000
 DEFAULT_UNCATEGORIZED_OUTPUT = "uncategorized"
@@ -116,9 +116,16 @@ class EvaluatedPic:
             else DEFAULT_UNCATEGORIZED_OUTPUT
         )
         new_path = os.path.join(relative_path, node_name)
+        os.makedirs(DEFAULT_OUTPUT, exist_ok=True)
+        os.makedirs(os.path.join(DEFAULT_OUTPUT, new_path), exist_ok=True)
+        new_file_path = full_path_from_relative(
+            file=self.storage_path, new_relative_path=new_path
+        )
+        if not self.resize and new_file_path == self.storage_path:
+            return
 
         self.storage_path = transfer_image(
-            file=self.storage_path, new_path=new_path, resize=self.resize
+            file=self.storage_path, new_file_path=new_file_path, resize=self.resize
         )
 
         if self.resize:
