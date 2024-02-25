@@ -14,6 +14,7 @@ from file_utils import DEFAULT_OUTPUT
 Logger.setLevel("DEBUG")
 ZOOM_IN_SCALE = 1.75
 ZOOM_OUT_SCALE = 0.4
+DEFAULT_IMAGE = "Kivy-logo.jpg"
 
 
 class MainScreen(Screen):
@@ -55,6 +56,7 @@ class MainScreen(Screen):
         """When leaving this screen save the evaluations."""
         self.image_handler.save_current()
         self.image_handler.save_eval_data()
+        self.ids.image.source = DEFAULT_IMAGE
 
     def _on_zoom_in(self):
         self.scale_image(ZOOM_IN_SCALE)
@@ -96,7 +98,7 @@ class MainScreen(Screen):
 
     def __load_new_image(self) -> None:
         """Reload current image and reload evaluation checkboxes."""
-        img: Image = self.ids.image
+        img = self.ids.image
         self.ids.scatter_img_holder.pos = self.ids.stencil1.pos
         img.size = self.ids.stencil1.width, self.ids.stencil1.height
 
@@ -159,30 +161,20 @@ class MenuScreen(Screen):
 
     def _load_databank(self) -> None:
         """Load eval image info from databank and go through its images."""
-        self.parent.current = MainScreen.screen_name
-        nodes_holder = JSONDataBank.read()
-        image_handler = OnScreenImageHandler(DEFAULT_OUTPUT, nodes_holder)
-
-        if image_handler.empty:
-            popup = Popup(
-                title="Databank warning",
-                content=Label(text="Databank contains no physical images"),
-                auto_dismiss=True,
-                size_hint=(0.4, 0.4),
-            )
-            popup.open()
-            return
-
-        self.parent.get_screen(MainScreen.screen_name).set_image_handler(image_handler)
-        self.parent.current = MainScreen.screen_name
+        self.__process_scan_inputs(DEFAULT_OUTPUT)
 
     def _load_inputs(self) -> None:
         """Load a list of images in a user-specified directory."""
         user_input_path: str = (
             self.ids.inputs_text.text or self.ids.inputs_text.hint_text
         )
-        image_handler = OnScreenImageHandler(user_input_path)
+        self.__process_scan_inputs(user_input_path)
 
+    def __process_scan_inputs(self, input_path: str) -> None:
+        nodes_holder = None
+        if DEFAULT_OUTPUT in input_path:
+            nodes_holder = JSONDataBank.read()
+        image_handler = OnScreenImageHandler(input_path, nodes_holder)
         if image_handler.empty:
             popup = Popup(
                 title="Folder scan warning",
