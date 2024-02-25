@@ -55,7 +55,7 @@ ScreenManager:
                             source: 'Kivy-logo.jpg'
                             fit_mode: 'contain'
                 BoxLayout:
-                    size_hint_x: .6
+                    size_hint_x: 1
                     id: bottom_menu_box
                     color: 'black'
                     orientation: 'horizontal'
@@ -81,6 +81,17 @@ ScreenManager:
                         id: zoom_out_btn
                         text: 'Zoom Out'
                         on_press: root._on_zoom_out()
+                    Label:
+                        size_hint: .15, 1
+                        text: 'Resize'
+                        text_size: self.size
+                        halign: 'right'
+                        valign: 'middle'
+                    CheckBox:
+                        size_hint: .1, 1
+                        id: resize_check_box
+                        on_active: root._on_resize_check_box(self.active)
+                    
             BoxLayout:
                 size_hint_x: 1
                 id: eval_box
@@ -93,7 +104,6 @@ ScreenManager:
             pos_hint: {'center_x': 0.3, 'center_y': 0.6}
             size_hint: .3, .1
             on_press: root._load_inputs()
-            # on_release: app.root.current = 'main_screen'
         TextInput:
             hint_text: 'inputs'
             padding_y: [18,0]
@@ -106,4 +116,3 @@ ScreenManager:
             pos_hint: {'center_x': 0.5, 'center_y': 0.2}
             size_hint: .5, .1
             on_press: root._load_databank()
-            # on_release: app.root.current = 'main_screen'

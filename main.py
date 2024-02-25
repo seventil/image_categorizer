@@ -12,7 +12,6 @@ from eval_schema import EvaluationSchema, LabeledCheckBox
 from file_utils import DEFAULT_OUTPUT
 
 Logger.setLevel("DEBUG")
-APP_UI_TEMPLATE_FILE = "main_app.kv"
 ZOOM_IN_SCALE = 1.75
 ZOOM_OUT_SCALE = 0.4
 
@@ -63,6 +62,10 @@ class MainScreen(Screen):
     def _on_zoom_out(self):
         self.scale_image(ZOOM_OUT_SCALE)
 
+    def _on_resize_check_box(self, active: bool):
+        Logger.info(f"_on_resize_check_box {active}")
+        self.image_handler.current.resize = active
+
     def scale_image(self, scale: float = 1):
         img = self.ids.image
         x, y = img.size
@@ -93,7 +96,7 @@ class MainScreen(Screen):
 
     def __load_new_image(self) -> None:
         """Reload current image and reload evaluation checkboxes."""
-        img = self.ids.image
+        img: Image = self.ids.image
         self.ids.scatter_img_holder.pos = self.ids.stencil1.pos
         img.size = self.ids.stencil1.width, self.ids.stencil1.height
 
@@ -103,6 +106,7 @@ class MainScreen(Screen):
         img.source = self.image_handler.current.storage_path
         img.center_x = img.parent.parent.center_x
         img.center_y = img.parent.parent.center_y
+        self.ids.resize_check_box.active = self.image_handler.current.resize
 
     def __set_up_evaluation_checkboxes(self) -> None:
         """Dynamically add evaluation checkboxes using eval_schema.
