@@ -42,12 +42,20 @@ ScreenManager:
                 id: image_box
                 color: 'black'
                 orientation: 'vertical'
-                Image:
-                    id: image
+                StencilView:
+                    id: stencil1
                     size_hint_y: 12
-                    source: 'Kivy-logo.jpg'
+                    Scatter:
+                        pos: stencil1.pos
+                        size: image.size
+                        id: scatter_img_holder
+                        Image:
+                            id: image
+                            size: 0, 0
+                            source: 'Kivy-logo.jpg'
+                            fit_mode: 'contain'
                 BoxLayout:
-                    size_hint_x: .3
+                    size_hint_x: .6
                     id: bottom_menu_box
                     color: 'black'
                     orientation: 'horizontal'
@@ -63,6 +71,16 @@ ScreenManager:
                         id: reset_evals_btn
                         text: 'Reset Evals'
                         on_press: root._on_reset_evals()
+                    Button:
+                        size_hint: .3, 1
+                        id: zoom_in_btn
+                        text: 'Zoom In'
+                        on_press: root._on_zoom_in()
+                    Button:
+                        size_hint: .3, 1
+                        id: zoom_out_btn
+                        text: 'Zoom Out'
+                        on_press: root._on_zoom_out()
             BoxLayout:
                 size_hint_x: 1
                 id: eval_box

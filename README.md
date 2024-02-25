@@ -75,3 +75,31 @@ For subcategories naming goes the following way: <category mark>_<subcategory ma
                 ...
                 - 1_1_A img1000
 
+## Setting up evaluations
+
+To specify which categories you want to evaluate images by, you have to create a `schema.json` file
+using `schema-template.json` as an example. Inside the json you see two keys:
+`Categories` and `Evals`. They both mean evaluation categories: a criteria by which you evaluate the
+image. But the difference between them is that with images `Categories` key are separated into
+different directories, and both `Categories` and `Evals` evaluations are stored in the databank.
+You can specify any `string` evaluation category you want as long as it's unique in the schema.
+Each evaluation category key has an `int` value meaning the range of marks you'll have for that
+specific evaluation. `Photographic: 5` Would mean you can range images by this category with marks 
+from 1 to 5. 
+
+The order of keys in `Categories` determines the directory structure. Everything that's higher in
+the list is also higher in directory structure.
+With the following `Categories` list:
+
+cat1: 2,
+cat2: 2,
+cat3: 2
+
+You will get the following directory structures for different sets of evaluations:
+
+cat1/cat2/cat3
+cat1/cat3/
+cat1/
+cat2/cat3/
+cat2/
+cat3/

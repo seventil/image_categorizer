@@ -13,6 +13,8 @@ from file_utils import DEFAULT_OUTPUT
 
 Logger.setLevel("DEBUG")
 APP_UI_TEMPLATE_FILE = "main_app.kv"
+ZOOM_IN_SCALE = 1.75
+ZOOM_OUT_SCALE = 0.4
 
 
 class MainScreen(Screen):
@@ -33,11 +35,17 @@ class MainScreen(Screen):
     def _on_keyboard(self, *args):
         LEFT_KEY = 276
         RIGHT_KEY = 275
+        UP_KEY = 273
+        DOWN_KEY = 274
 
         if args[1] == LEFT_KEY:
             self._load_previous_image()
         if args[1] == RIGHT_KEY:
             self._load_next_image()
+        if args[1] == UP_KEY:
+            self.scale_image(ZOOM_IN_SCALE)
+        if args[1] == DOWN_KEY:
+            self.scale_image(ZOOM_OUT_SCALE)
 
     def on_enter(self, *args) -> None:
         """When entering this screen render an image."""
@@ -48,6 +56,20 @@ class MainScreen(Screen):
         """When leaving this screen save the evaluations."""
         self.image_handler.save_current()
         self.image_handler.save_eval_data()
+
+    def _on_zoom_in(self):
+        self.scale_image(ZOOM_IN_SCALE)
+
+    def _on_zoom_out(self):
+        self.scale_image(ZOOM_OUT_SCALE)
+
+    def scale_image(self, scale: float = 1):
+        img = self.ids.image
+        x, y = img.size
+        img.size = (x * scale, y * scale)
+        img.center_x = img.parent.parent.center_x
+        img.center_y = img.parent.parent.center_y
+        self.ids.scatter_img_holder.pos = self.ids.stencil1.pos
 
     def set_image_handler(self, handler: OnScreenImageHandler) -> None:
         """Set the image handler for this screen."""
@@ -71,9 +93,16 @@ class MainScreen(Screen):
 
     def __load_new_image(self) -> None:
         """Reload current image and reload evaluation checkboxes."""
+        img = self.ids.image
+        self.ids.scatter_img_holder.pos = self.ids.stencil1.pos
+        img.size = self.ids.stencil1.width, self.ids.stencil1.height
+
         self.eval_schema.reload_evaluations(self.image_handler.current.evals)
         self.ids.img_name.text = self.image_handler.current.storage_path
-        self.ids.image.source = self.image_handler.current.storage_path
+
+        img.source = self.image_handler.current.storage_path
+        img.center_x = img.parent.parent.center_x
+        img.center_y = img.parent.parent.center_y
 
     def __set_up_evaluation_checkboxes(self) -> None:
         """Dynamically add evaluation checkboxes using eval_schema.
