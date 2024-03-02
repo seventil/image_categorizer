@@ -55,7 +55,7 @@ class EvaluatedPic:
         resize: MustResize = True,
     ) -> None:
         """Initialize the object with all attributes."""
-        self.storage_path = storage_path
+        self.storage_path = os.path.normcase(storage_path)
         if categories is None:
             self.categories: Categories = []
         else:
@@ -109,7 +109,7 @@ class EvaluatedPic:
         """Evaluation marks for the categories assigned for the image."""
         return tuple(self.__evals[mark] for mark in self.categories)
 
-    def change_storage_path(self, node_name: str) -> None:
+    def physical_process(self, node_name: str) -> None:
         relative_path = (
             os.path.join(*self.categories)
             if len(self.categories) > 0
@@ -177,6 +177,7 @@ class ImageStorageNode:
     def add_image(self, image: EvaluatedPic) -> bool:
         """Add image object to the node. Returns true if the image was added."""
         if image.node_ref == self:
+            image.physical_process(node_name=self.name)
             return True
         if len(self.images) > MAX_ITEMS_PER_NODE:
             return False
@@ -184,7 +185,7 @@ class ImageStorageNode:
             image.node_ref.pop_image(image)
         self.images.append(image)
         image.node_ref = self
-        image.change_storage_path(node_name=self.name)
+        image.physical_process(node_name=self.name)
 
         return True
 
@@ -261,7 +262,7 @@ class ImageNodesHolder:
                 max_bucket[-1] = chr(ordinal)
                 bucket = "".join(max_bucket)
             else:
-                bucket = "A"
+                bucket = "a"
 
             new_node = ImageStorageNode(
                 ranks=image.sorted_marks,

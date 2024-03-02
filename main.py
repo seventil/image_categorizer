@@ -1,3 +1,5 @@
+import os
+
 from kivy.app import App
 from kivy.core.window import Window
 from kivy.logger import Logger
@@ -9,7 +11,7 @@ from kivy.uix.screenmanager import Screen
 from app_logic import OnScreenImageHandler
 from databank import JSONDataBank
 from eval_schema import EvaluationSchema, LabeledCheckBox
-from file_utils import DEFAULT_OUTPUT
+from file_utils import DEFAULT_DATABANK_DIR, DEFAULT_OUTPUT
 
 Logger.setLevel("DEBUG")
 ZOOM_IN_SCALE = 1.75
@@ -172,8 +174,13 @@ class MenuScreen(Screen):
 
     def __process_scan_inputs(self, input_path: str) -> None:
         nodes_holder = None
-        if DEFAULT_OUTPUT in input_path:
-            nodes_holder = JSONDataBank.read()
+        input_path = os.path.normcase(input_path)
+        dirs = input_path.split(os.path.sep)
+        if dirs[0] == DEFAULT_OUTPUT:
+            dirs.insert(1, DEFAULT_DATABANK_DIR)
+            path = os.path.join(*dirs)
+            nodes_holder = JSONDataBank.read(path)
+
         image_handler = OnScreenImageHandler(input_path, nodes_holder)
         if image_handler.empty:
             popup = Popup(

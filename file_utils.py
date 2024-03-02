@@ -5,9 +5,11 @@ from PIL import Image
 
 IMAGE_FILE_FORMATS = ["jpg", "jpeg", "png", "webp"]
 DEFAULT_FILE_FORMAT = "jpeg"
+DEFAULT_OUTPUT = "outputs"
+DEFAULT_DATABANK_DIR = "databank"
+DEFAULT_DB_PATH = os.path.join(DEFAULT_OUTPUT, DEFAULT_DATABANK_DIR)
 MAX_SIZE = 1600
 SCAN_DEFAULT_PATH = "inputs"
-DEFAULT_OUTPUT = "outputs"
 
 
 def filter_files(files: list[str], filters: str | list[str]) -> list[str]:
@@ -31,7 +33,7 @@ def scan_images_input(path: str = SCAN_DEFAULT_PATH) -> list[str]:
 
     for directory, files in content.items():
         for file in files:
-            images.append(os.path.join(directory, file))
+            images.append(os.path.normcase(os.path.join(directory, file)))
     return images
 
 
@@ -52,12 +54,15 @@ def transfer_image(file: str, new_file_path: str, resize: bool):
         img.save(new_file_path, DEFAULT_FILE_FORMAT)
 
     Logger.debug(f"{file} was moved to {new_file_path}")
-    os.remove(file)
+    if file != new_file_path:
+        os.remove(file)
     return new_file_path
 
 
 def full_path_from_relative(file: str, new_relative_path: str) -> str:
     base_name = os.path.basename(file)
     new_file_name = "".join((os.path.splitext(base_name)[0], f".{DEFAULT_FILE_FORMAT}"))
-    new_file_path = os.path.join(DEFAULT_OUTPUT, new_relative_path, new_file_name)
+    new_file_path = os.path.normcase(
+        os.path.join(DEFAULT_OUTPUT, new_relative_path, new_file_name)
+    )
     return new_file_path

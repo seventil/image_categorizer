@@ -2,7 +2,7 @@ import json
 import os
 
 from databank_schema import DataBankSchema
-from file_utils import DEFAULT_OUTPUT, filter_files
+from file_utils import DEFAULT_DB_PATH, filter_files
 from image_nodes import (
     EvaluatedPic,
     ImageNodesHolder,
@@ -13,7 +13,7 @@ from image_nodes import (
 )
 
 STORAGE_FORMAT = "json"
-DEFAULT_DB_PATH = os.path.join(DEFAULT_OUTPUT, "databank")
+
 DEFAULT_ENCODING = "utf-8"
 JSON_INDENT = 4
 
@@ -32,7 +32,7 @@ class JSONDataBank:
         for folder, _, files in os.walk(path):
             if len(files) == 0:
                 continue
-            rel_path = os.path.relpath(folder, start=path)
+            rel_path = os.path.relpath(folder, start=DEFAULT_DB_PATH)
 
             node_key = tuple(rel_path.split(os.path.sep))
             files = filter_files(files, STORAGE_FORMAT)
@@ -89,18 +89,12 @@ class JSONDataBank:
                 output_name = f"{node.name}.{STORAGE_FORMAT}"
                 output_path = os.path.join(root_path, *path)
                 os.makedirs(output_path, exist_ok=True)
-                if append:
-                    with open(
-                        os.path.join(output_path, output_name),
-                        "r",
-                        encoding=DEFAULT_ENCODING,
-                    ) as fstream:
-                        eval_pics_json_data = json.load(fstream)
-                    evaluated_images = [*evaluated_images, *eval_pics_json_data]
+                full_file_path = os.path.join(output_path, output_name)
+                mode = "a" if append else "w"
 
                 with open(
-                    os.path.join(output_path, output_name),
-                    "w",
+                    full_file_path,
+                    mode,
                     encoding=DEFAULT_ENCODING,
                 ) as fstream:
                     json.dump(evaluated_images, fstream, indent=JSON_INDENT)
