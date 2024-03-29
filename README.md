@@ -103,3 +103,16 @@ cat1/
 cat2/cat3/
 cat2/
 cat3/
+
+### Out-of-scope of the program work with categories
+Some parts of work with categorized images is better to do using existing good tools, rather than
+integrating them poorly into the subject categorizer.
+
+#### Evaluating distribution of images across different evals and categories:
+
+Best done using TreeSize: https://www.jam-software.com/treesize. 
+
+#### Adding new evals or categories on top of existing, or shifting existing evals:
+
+Best done using renames of the json databank files (and updating the evaluations inside the file itself).
+
