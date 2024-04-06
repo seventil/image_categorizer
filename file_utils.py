@@ -59,9 +59,9 @@ def transfer_image(file: str, new_file_path: str, resize: bool):
     return new_file_path
 
 
-def full_path_from_relative(file: str, new_relative_path: str) -> str:
+def full_path_from_relative(file: str, new_relative_path: str, suffix: str = "") -> str:
     base_name = os.path.basename(file)
-    new_file_name = "".join((os.path.splitext(base_name)[0], f".{DEFAULT_FILE_FORMAT}"))
+    new_file_name = "".join((os.path.splitext(base_name)[0], suffix, f".{DEFAULT_FILE_FORMAT}"))
     new_file_path = os.path.normcase(
         os.path.join(DEFAULT_OUTPUT, new_relative_path, new_file_name)
     )

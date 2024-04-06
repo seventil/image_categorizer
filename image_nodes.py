@@ -1,12 +1,8 @@
 import os
+from datetime import datetime
 
-from eval_schema import (
-    Categories,
-    EvalCategory,
-    Evaluations,
-    Mark,
-    PrioritizedCategories,
-)
+from eval_schema import (Categories, EvalCategory, Evaluations, Mark,
+                         PrioritizedCategories)
 from file_utils import DEFAULT_OUTPUT, full_path_from_relative, transfer_image
 
 MAX_ITEMS_PER_NODE = 1000
@@ -109,7 +105,10 @@ class EvaluatedPic:
         """Evaluation marks for the categories assigned for the image."""
         return tuple(self.__evals[mark] for mark in self.categories)
 
-    def physical_process(self, node_name: str) -> None:
+    def physical_process(self, node_name: NodeName) -> None:
+        """Process physical storage of the image. If category hierarchy didn't
+        change do nothing. If other image with that name exists - rename.
+        """
         relative_path = (
             os.path.join(*self.categories)
             if len(self.categories) > 0
@@ -121,6 +120,13 @@ class EvaluatedPic:
         new_file_path = full_path_from_relative(
             file=self.storage_path, new_relative_path=new_path
         )
+
+        if os.path.isfile(new_file_path):
+            suffix = datetime.now().strftime("%Y%m%dT%H%M%S")
+            new_file_path = full_path_from_relative(
+                file=self.storage_path, new_relative_path=new_path, suffix=suffix
+            )
+
         if not self.resize and new_file_path == self.storage_path:
             return
 
@@ -176,7 +182,7 @@ class ImageStorageNode:
 
     def add_image(self, image: EvaluatedPic) -> bool:
         """Add image object to the node. Returns true if the image was added."""
-        if image.node_ref == self:
+        if image.node_ref == self and image.resize:
             image.physical_process(node_name=self.name)
             return True
         if len(self.images) > MAX_ITEMS_PER_NODE:
