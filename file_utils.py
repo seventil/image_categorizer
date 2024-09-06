@@ -63,6 +63,6 @@ def full_path_from_relative(file: str, new_relative_path: str, suffix: str = "")
     base_name = os.path.basename(file)
     new_file_name = "".join((os.path.splitext(base_name)[0], suffix, f".{DEFAULT_FILE_FORMAT}"))
     new_file_path = os.path.normcase(
-        os.path.join(DEFAULT_OUTPUT, new_relative_path, new_file_name)
+        os.path.join(new_relative_path, new_file_name)
     )
     return new_file_path

@@ -42,6 +42,7 @@ or, if not, to preserve HD texture detail."""
 
 class EvaluatedPic:
     """Encapsulates evaluations for an image with info on where it is stored."""
+    output_folder = DEFAULT_OUTPUT
 
     def __init__(
         self,
@@ -114,11 +115,12 @@ class EvaluatedPic:
             if len(self.categories) > 0
             else DEFAULT_UNCATEGORIZED_OUTPUT
         )
-        new_path = os.path.join(relative_path, node_name)
-        os.makedirs(DEFAULT_OUTPUT, exist_ok=True)
-        os.makedirs(os.path.join(DEFAULT_OUTPUT, new_path), exist_ok=True)
+        os.makedirs(self.output_folder, exist_ok=True)
+        new_path = os.path.join(self.output_folder, relative_path, node_name)
+        os.makedirs(new_path, exist_ok=True)
         new_file_path = full_path_from_relative(
-            file=self.storage_path, new_relative_path=new_path
+            file=self.storage_path, 
+            new_relative_path=new_path
         )
 
         if os.path.isfile(new_file_path):
@@ -182,11 +184,14 @@ class ImageStorageNode:
 
     def add_image(self, image: EvaluatedPic) -> bool:
         """Add image object to the node. Returns true if the image was added."""
-        if image.node_ref == self and image.resize:
-            image.physical_process(node_name=self.name)
+        if image.node_ref == self:
+            if image.resize:
+                image.physical_process(node_name=self.name)
             return True
-        if len(self.images) > MAX_ITEMS_PER_NODE:
+
+        if len(self.images) >= MAX_ITEMS_PER_NODE:
             return False
+        
         if image.node_ref is not None:
             image.node_ref.pop_image(image)
         self.images.append(image)
