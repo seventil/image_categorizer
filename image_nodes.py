@@ -68,7 +68,7 @@ class EvaluatedPic:
     def add_category(
         self, category: EvalCategory, category_priority: PrioritizedCategories
     ) -> None:
-        """Add a category that the image fits into."""
+        """Add a category that the image fits into. Ignores duplicates."""
         if category not in self.categories:
             self.categories.append(category)
             self.__sort_categories(category_priority)
