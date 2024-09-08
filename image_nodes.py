@@ -109,6 +109,7 @@ class EvaluatedPic:
     def physical_process(self, node_name: NodeName) -> None:
         """Process physical storage of the image. If category hierarchy didn't
         change do nothing. If other image with that name exists - rename.
+        Assumes that the system never repeats the same datetime.
         """
         relative_path = (
             os.path.join(*self.categories)
