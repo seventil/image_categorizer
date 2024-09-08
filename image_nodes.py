@@ -83,9 +83,13 @@ class EvaluatedPic:
                 self.categories[image_cat_idx] = cat
                 image_cat_idx += 1
 
-    def evaluate(self, category: EvalCategory, mark: Mark) -> None:
+    def evaluate(self, category: EvalCategory, mark: Mark | None) -> None:
         """Add or change an evaluation for the image."""
-        self.__evals[category] = mark
+        if mark is not None:
+            self.__evals[category] = mark
+        else:
+            self.__evals.pop(category)
+            self.categories.remove(category)
 
     @property
     def evals(self) -> Evaluations:

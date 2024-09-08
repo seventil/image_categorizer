@@ -145,7 +145,8 @@ class MainScreen(Screen):
             self.image_handler.current.add_category(
                 checkbox.group, self.eval_schema.prioritized_categories
             )
-        self.image_handler.current.evaluate(checkbox.group, checkbox.label)
+        mark = checkbox.label if checkbox.active else None
+        self.image_handler.current.evaluate(checkbox.group, mark)
 
     def _on_reset_evals(self) -> None:
         """Resets UI checkboxes and evaluation in the image."""
