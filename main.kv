@@ -16,7 +16,7 @@ ScreenManager:
         BoxLayout:
             id: navigation_box
             orientation: 'horizontal'
-            size_hint_y: 1
+            size_hint_y: .8
             Button:
                 text_color: "white"
                 size_hint_x: 1
@@ -91,6 +91,27 @@ ScreenManager:
                         size_hint: .1, 1
                         id: resize_check_box
                         on_active: root._on_resize_check_box(self.active)
+                BoxLayout:
+                    id: tag_box
+                    orientation: 'horizontal'
+                    size_hint_y: .8
+                    size_hint_x: .9
+                    TextInput:
+                        hint_text: 'add tags'
+                        padding_y: [10,0]
+                        id: tags_text
+                        font_size: 16
+                        size_hint: .7, 1
+                    Label:
+                        size_hint: .2, 1
+                        text: 'Persist tags'
+                        text_size: self.size
+                        halign: 'right'
+                        valign: 'middle'
+                    CheckBox:
+                        size_hint: .1, 1
+                        id: persist_check_box
+                        on_active: root._on_persist_check_box(self.active)
                     
             BoxLayout:
                 size_hint_x: 1
