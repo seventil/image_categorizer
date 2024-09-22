@@ -51,11 +51,11 @@ class OnScreenImageHandler:
     def scan_images(self, physical_images):
         nodes_images: NodePics = self._nodes_holder.list_images()
         for node_pic in nodes_images:
-            img_path = node_pic.storage_path
-            if img_path not in physical_images:
-                Logger.warning(f"{img_path} from databank does not exist")
+            if node_pic.storage_path not in physical_images:
+                Logger.warning(f"{node_pic.storage_path} from databank does not exist, deleting")
+                node_pic.node_ref.pop_image(node_pic)
             else:
-                Logger.debug(f"Added {node_pic} to onscreen images handler")
+                Logger.debug(f"Added {node_pic.storage_path} to onscreen images handler")
                 self.__images.append(node_pic)
 
         node_img_paths = [img.storage_path for img in nodes_images]
