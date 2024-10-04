@@ -5,3 +5,4 @@ class DataBankSchema:
     categories = "Categories"
     evals = "Evals"
     resize = "Resize"
+    tags = "Tags"

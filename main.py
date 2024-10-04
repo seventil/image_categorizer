@@ -56,7 +56,7 @@ class MainScreen(Screen):
 
     def on_leave(self, *args) -> None:
         """When leaving this screen save the evaluations."""
-        self.image_handler.save_current()
+        self.image_handler.save_current(tags=self.ids.tags_text.text)
         self.image_handler.save_eval_data()
         self.ids.image.source = DEFAULT_IMAGE
 
@@ -86,7 +86,9 @@ class MainScreen(Screen):
         """Save current evaluated image to appropriate Node,
         save it physically and load prev image.
         """
-        self.image_handler.save_current()
+        self.image_handler.save_current(tags=self.ids.tags_text.text)
+        if not self.image_handler.preserve_tags:
+            self.ids.tags_text.text = ""
         self.image_handler.previous()
         self.__load_new_image()
 
@@ -94,7 +96,9 @@ class MainScreen(Screen):
         """Save current evaluated image to appropriate Node,
         save it physically and load next image.
         """
-        self.image_handler.save_current()
+        self.image_handler.save_current(tags=self.ids.tags_text.text)
+        if not self.image_handler.preserve_tags:
+            self.ids.tags_text.text = ""
         self.image_handler.next()
         self.__load_new_image()
 
@@ -111,6 +115,8 @@ class MainScreen(Screen):
         img.center_x = img.parent.parent.center_x
         img.center_y = img.parent.parent.center_y
         self.ids.resize_check_box.active = self.image_handler.current.resize
+        if not self.ids.persist_check_box.active or self.image_handler.current.tags:
+            self.ids.tags_text.text = self.image_handler.current.tags
 
     def __set_up_evaluation_checkboxes(self) -> None:
         """Dynamically add evaluation checkboxes using eval_schema.
@@ -155,6 +161,10 @@ class MainScreen(Screen):
         self.image_handler.current.categories.clear()
         self.image_handler.save_current()
 
+    def _on_persist_check_box(self, active: bool) -> None:
+        """Checks whether the tags shuld be preserved for the next image."""
+        self.image_handler.preserve_tags = active
+
 
 class MenuScreen(Screen):
     """Screen that allows to scan folder or databank for images to evaluate."""
@@ -176,6 +186,7 @@ class MenuScreen(Screen):
     def __process_scan_inputs(self, input_path: str) -> None:
         nodes_holder = None
         input_path = os.path.normcase(input_path)
+        Logger.debug(f"Scanning databank for input path {input_path}")
         dirs = input_path.split(os.path.sep)
         if dirs[0] == DEFAULT_OUTPUT:
             dirs.insert(1, DEFAULT_DATABANK_DIR)

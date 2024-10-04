@@ -3,14 +3,8 @@ import os
 
 from databank_schema import DataBankSchema
 from file_utils import DEFAULT_DB_PATH, filter_files
-from image_nodes import (
-    EvaluatedPic,
-    ImageNodesHolder,
-    ImageStorageNode,
-    NodePics,
-    NodesCatsMap,
-    SiblingNodes,
-)
+from image_nodes import (EvaluatedPic, ImageNodesHolder, ImageStorageNode,
+                         NodePics, NodesCatsMap, SiblingNodes)
 
 STORAGE_FORMAT = "json"
 
@@ -50,6 +44,7 @@ class JSONDataBank:
                         categories=pic.get(DataBankSchema.categories),
                         evals=pic.get(DataBankSchema.evals),
                         resize=pic.get(DataBankSchema.resize),
+                        tags=pic.get(DataBankSchema.tags),
                     )
                     for pic in eval_pics_json_data
                 ]
@@ -73,6 +68,9 @@ class JSONDataBank:
 
         The root contains folder structure fitting categories and json files
         with lists of evaluated images data.
+        Append mode if the inputs were read without accessing the databank,
+        write mode if the databank was read completely and the file has to be fully
+        updated.
         """
 
         for path, image_nodes in nodes_holder.image_nodes.items():
@@ -84,6 +82,7 @@ class JSONDataBank:
                         DataBankSchema.categories: img.categories,
                         DataBankSchema.evals: img.evals,
                         DataBankSchema.resize: img.resize,
+                        DataBankSchema.tags: img.tags,
                     }
                     evaluated_images.append(evaluated_img_json)
                 output_name = f"{node.name}.{STORAGE_FORMAT}"

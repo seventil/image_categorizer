@@ -4,8 +4,6 @@ from databank import JSONDataBank
 from file_utils import scan_images_input
 from image_nodes import EvaluatedPic, ImageNodesHolder, NodePics
 
-DEFAULT_EVAL_RANGE = 2
-
 
 class OnScreenImageHandler:
     """Manager class that keeps information on the current image (where the cursor
@@ -15,6 +13,7 @@ class OnScreenImageHandler:
         """Validate images in holder and physically stored images."""
         physical_images: list[str] = scan_images_input(input_path)
         self.cursor = ListCursor(len(physical_images))
+        self.preserve_tags = False
 
         if nodes_holder is not None:
             self._nodes_holder = nodes_holder
@@ -38,7 +37,8 @@ class OnScreenImageHandler:
         self.cursor.shift(-1)
         self.__assign_current()
 
-    def save_current(self) -> None:
+    def save_current(self, tags) -> None:
+        self.current.tags = tags
         self._nodes_holder.post_pic(self.current)
 
     def save_eval_data(self) -> None:

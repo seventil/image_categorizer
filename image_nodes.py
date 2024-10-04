@@ -39,6 +39,9 @@ type MustResize = bool
 """Indicator if the image should be resized (upon physical save) to save storage space
 or, if not, to preserve HD texture detail."""
 
+type PicTags = str
+"""Tags, delimited by a comma for EvaluatedPic"""
+
 
 class EvaluatedPic:
     """Encapsulates evaluations for an image with info on where it is stored."""
@@ -50,6 +53,7 @@ class EvaluatedPic:
         categories: Categories | None = None,
         evals: Evaluations | None = None,
         resize: MustResize = True,
+        tags: PicTags | None = None,
     ) -> None:
         """Initialize the object with all attributes."""
         self.storage_path = os.path.normcase(storage_path)
@@ -62,6 +66,7 @@ class EvaluatedPic:
         else:
             self.__evals = evals
         self.resize = resize
+        self.tags = tags if tags else ""
 
         self.node_ref: ImageStorageNode | None = None
 
